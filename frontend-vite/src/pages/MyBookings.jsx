@@ -9,12 +9,11 @@ export default function MyBookings() {
   }, []);
 
   return (
-    <div>
-      <h2>My Bookings</h2>
+    <div className="max-w-4xl mx-auto mt-6 space-y-4">
       {bookings.map(b => (
-        <div key={b._id}>
-          <p>{b.busId.name}</p>
-          <p>{b.travelDate}</p>
+        <div key={b._id} className="bg-white p-4 rounded shadow">
+          <p className="font-semibold">{b.busId.name}</p>
+          <p>Date: {b.travelDate}</p>
           <p>Seats: {b.seats.join(", ")}</p>
         </div>
       ))}
