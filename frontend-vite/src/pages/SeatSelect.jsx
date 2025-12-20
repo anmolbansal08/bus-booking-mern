@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useParams, useLocation,useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function SeatSelect() {
@@ -7,6 +7,15 @@ export default function SeatSelect() {
   const date = new URLSearchParams(useLocation().search).get("date");
   const [bus, setBus] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("token",token)
+    if (!token) {
+      navigate("/login");
+    }
+  }, []);
 
   useEffect(() => {
     api.get(`/buses/${busId}?date=${date}`).then(res => setBus(res.data));

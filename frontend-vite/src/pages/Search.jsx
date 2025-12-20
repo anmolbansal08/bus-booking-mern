@@ -4,9 +4,11 @@ import api from "../services/api";
 
 export default function Search() {
   const [source, setSource] = useState("");
+  const today = new Date().toISOString().split("T")[0];
   const [destination, setDestination] = useState("");
-  const [date, setDate] = useState("");
+  const [date, setDate] = useState(today);
   const navigate = useNavigate();
+
 
   const search = async () => {
     if (!source || !destination || !date) {
@@ -62,6 +64,7 @@ export default function Search() {
             </label>
             <input
               type="date"
+              min={today}
               className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-200 outline-none"
               onChange={e => setDate(e.target.value)}
             />

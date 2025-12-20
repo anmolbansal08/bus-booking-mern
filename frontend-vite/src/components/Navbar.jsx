@@ -17,7 +17,7 @@ export default function Navbar() {
           to="/"
           className="text-2xl font-bold text-red-600 tracking-tight"
         >
-          BusBooking
+          HriKri Bus
         </Link>
 
         {/* Actions */}
