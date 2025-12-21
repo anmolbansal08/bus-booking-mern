@@ -1,58 +1,59 @@
 import { Link, useNavigate } from "react-router-dom";
+import AccountDrawer from "./AccountDrawer";
+import { useState } from "react";
 
 export default function Navbar() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
-
+  const [open, setOpen] = useState(false);
   const logout = () => {
     localStorage.removeItem("token");
     navigate("/login");
   };
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Brand */}
-        <Link
-          to="/"
-          className="text-2xl font-bold text-red-600 tracking-tight"
-        >
-          HriKri Bus
-        </Link>
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex h-14 items-center justify-between">
+          
+          {/* Brand */}
+          <Link
+            to="/"
+            className="text-xl font-bold text-red-600 tracking-tight"
+          >
+            HriKri Bus
+          </Link>
 
-        {/* Actions */}
-        <div className="flex items-center gap-4">
-          {!token ? (
-            <>
-              <Link
-                to="/login"
-                className="text-gray-600 hover:text-red-600 font-medium"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="bg-red-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-red-700 transition"
-              >
-                Register
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/my-bookings"
-                className="text-gray-600 hover:text-red-600 font-medium"
-              >
-                My Bookings
-              </Link>
+          {/* Actions */}
+          <nav className="flex items-center gap-6 text-sm text-gray-600">
+            <button className="hover:text-red-600">
+              Help
+            </button>
+
+            <button className="hover:text-red-600">
+              Manage Booking
+            </button>
+
+            {!token ? (
+              <>
+<button
+  onClick={() => setOpen(true)}
+  className="font-medium text-gray-700 hover:text-red-600"
+>
+  Account
+</button>
+
+<AccountDrawer open={open} onClose={() => setOpen(false)} />
+  </>
+            ) : (
               <button
                 onClick={logout}
-                className="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200"
+                className="font-medium text-gray-700 hover:text-red-600"
               >
                 Logout
               </button>
-            </>
-          )}
+            )}
+          </nav>
         </div>
       </div>
     </header>
