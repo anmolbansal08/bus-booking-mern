@@ -1,4 +1,5 @@
 import Amenity from "./Amenity";
+import RatingBadge from "./RatingBadge";
 
 export default function BusCard() {
   return (
@@ -6,14 +7,18 @@ export default function BusCard() {
       
       {/* Top Row */}
       <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-base font-semibold text-gray-900">
-            Volvo AC Sleeper
-          </h3>
-          <p className="text-xs text-gray-500">
-            HriKri Travels
-          </p>
-        </div>
+<div>
+  <h3 className="text-base font-semibold text-gray-900">
+    Volvo AC Sleeper
+  </h3>
+
+  <div className="flex items-center gap-2 mt-0.5">
+    <p className="text-xs text-gray-500">
+      HriKri Travels
+    </p>
+    <RatingBadge rating="4.3" reviews="128" />
+  </div>
+</div>
 
         <div className="text-right">
           <p className="text-lg font-bold text-gray-900">₹999</p>
