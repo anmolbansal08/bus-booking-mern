@@ -1,15 +1,12 @@
-import { Link, useNavigate } from "react-router-dom";
-import AccountDrawer from "./AccountDrawer";
+import { Link } from "react-router-dom";
 import { useState } from "react";
+import AccountDrawer from "./AccountDrawer";
+import AuthModal from "./auth/AuthModal";
+import AuthCard from "./auth/AuthCard";
 
 export default function Navbar() {
-  const token = localStorage.getItem("token");
-  const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -24,7 +21,7 @@ export default function Navbar() {
             HriKri Bus
           </Link>
 
-          {/* Actions */}
+          {/* Right Actions */}
           <nav className="flex items-center gap-6 text-sm text-gray-600">
             <button className="hover:text-red-600">
               Help
@@ -34,28 +31,32 @@ export default function Navbar() {
               Manage Booking
             </button>
 
-            {!token ? (
-              <>
-<button
-  onClick={() => setOpen(true)}
-  className="font-medium text-gray-700 hover:text-red-600"
->
-  Account
-</button>
-
-<AccountDrawer open={open} onClose={() => setOpen(false)} />
-  </>
-            ) : (
-              <button
-                onClick={logout}
-                className="font-medium text-gray-700 hover:text-red-600"
-              >
-                Logout
-              </button>
-            )}
+            {/* Account entry point (ALWAYS available) */}
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="font-medium hover:text-red-600"
+            >
+              Account
+            </button>
           </nav>
         </div>
       </div>
+
+      {/* Account Drawer (always accessible) */}
+      <AccountDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onLoginClick={() => setAuthOpen(true)}
+        onSignupClick={()=>setAuthOpen(true)}
+      />
+
+      {/* Auth Modal (opened from drawer) */}
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+      >
+        <AuthCard onClose={() => setAuthOpen(false)} />
+      </AuthModal>
     </header>
   );
 }

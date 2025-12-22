@@ -2,7 +2,9 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// Register
+// =====================
+// Register (Local Auth)
+// =====================
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -17,7 +19,8 @@ exports.register = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      authProvider: "local",
     });
 
     res.status(201).json({ message: "User registered successfully" });
@@ -26,13 +29,29 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login
+// =====================
+// Login (Local Auth)
+// =====================
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+
+    // User not found
     if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+
+    // 🚫 Block Google users from password login
+    if (user.authProvider === "google") {
+      return res.status(400).json({
+        message: "This account uses Google sign-in",
+      });
+    }
+
+    // Password missing (extra safety)
+    if (!user.password) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
