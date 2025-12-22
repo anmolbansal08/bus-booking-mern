@@ -29,7 +29,7 @@ export default function Search() {
   };
 
   return (
-    <main className="max-w-5xl mx-auto mt-14 px-4">
+    <div className="max-w-6xl mx-auto">
       <div className="bg-white rounded-2xl shadow-lg p-8">
         <h1 className="text-2xl font-semibold mb-6">
           Book Bus Tickets
@@ -70,7 +70,7 @@ export default function Search() {
             />
           </div>
 
-          <div className="flex items-end">
+          <div className="bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.12)] p-8">
             <button
               onClick={search}
               className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-xl transition"
@@ -80,6 +80,6 @@ export default function Search() {
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }

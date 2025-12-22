@@ -3,6 +3,7 @@ import { useState } from "react";
 import AccountDrawer from "./AccountDrawer";
 import AuthModal from "./auth/AuthModal";
 import AuthCard from "./auth/AuthCard";
+import BrandIcon from "./BrandIcon";
 
 export default function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -14,12 +15,9 @@ export default function Navbar() {
         <div className="flex h-14 items-center justify-between">
           
           {/* Brand */}
-          <Link
-            to="/"
-            className="text-xl font-bold text-red-600 tracking-tight"
-          >
-            HriKri Bus
-          </Link>
+<Link to="/" className="flex items-center">
+  <BrandIcon />
+</Link>
 
           {/* Right Actions */}
           <nav className="flex items-center gap-6 text-sm text-gray-600">

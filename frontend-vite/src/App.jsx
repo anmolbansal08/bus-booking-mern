@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Search from "./pages/Search";
+// import Search from "./pages/Search";
 import BusList from "./pages/BusList";
 import SeatSelect from "./pages/SeatSelect";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyBookings from "./pages/MyBookings";
 import Navbar from "./components/Navbar";
+import Home from "./components/Home";
 
 export default function App() {
   return (
@@ -13,7 +14,7 @@ export default function App() {
     <BrowserRouter>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Search />} />
+        <Route path="/" element={<Home />} />
         <Route path="/buses" element={<BusList />} />
         <Route path="/seats/:busId" element={<SeatSelect />} />
         <Route path="/login" element={<Login />} />
