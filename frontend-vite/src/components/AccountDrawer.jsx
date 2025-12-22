@@ -8,6 +8,8 @@ export default function AccountDrawer({
   onLoginClick,
   onSignupClick,
 }) {
+  const token = localStorage.getItem("token");
+
   return (
     <>
       {/* Backdrop */}
@@ -30,31 +32,56 @@ export default function AccountDrawer({
           <button onClick={onClose} className="text-xl">×</button>
         </div>
 
-        {/* Logged-out content */}
+        {/* Auth section */}
         <div className="p-4">
-          <h3 className="text-xl font-semibold mb-3">
-            Log in to manage your bookings
-          </h3>
+          {!token ? (
+            <>
+              <h3 className="text-xl font-semibold mb-3">
+                Log in to manage your bookings
+              </h3>
 
-          <button
-            onClick={onLoginClick}
-            className="w-full bg-red-600 text-white py-2 rounded-full font-semibold"
-          >
-            Log in
-          </button>
+              <button
+                onClick={onLoginClick}
+                className="w-full bg-red-600 text-white py-2 rounded-full font-semibold"
+              >
+                Log in
+              </button>
 
-          <p className="text-sm mt-3 text-gray-600">
-            Don’t have an account?{" "}
-            <span
-              onClick={onSignupClick}
-              className="text-red-600 font-medium cursor-pointer"
-            >
-              Sign up
-            </span>
-          </p>
+              <p className="text-sm mt-3 text-gray-600">
+                Don’t have an account?{" "}
+                <span
+                  onClick={onSignupClick}
+                  className="text-red-600 font-medium cursor-pointer"
+                >
+                  Sign up
+                </span>
+              </p>
+            </>
+          ) : (
+            <>
+              <h3 className="text-lg font-semibold">
+                You’re logged in
+              </h3>
+
+              <p className="text-sm text-gray-600 mt-1">
+                Manage your bookings and profile
+              </p>
+
+              <button
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  onClose();
+                  window.location.reload();
+                }}
+                className="mt-4 w-full border border-red-600 text-red-600 py-2 rounded-full font-semibold"
+              >
+                Logout
+              </button>
+            </>
+          )}
         </div>
 
-        {/* These sections can stay (later you’ll hide them when logged out) */}
+        {/* Drawer sections */}
         <AccountSection title="My details">
           <AccountItem label="Bookings" />
           <AccountItem label="Personal information" />
