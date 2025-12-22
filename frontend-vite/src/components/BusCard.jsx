@@ -2,6 +2,8 @@ import Amenity from "./Amenity";
 import RatingBadge from "./RatingBadge";
 
 export default function BusCard() {
+    const seatsLeft = 6; // dummy for now
+const showWarning = seatsLeft <= 5;
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-3">
       
@@ -54,9 +56,20 @@ export default function BusCard() {
 
       {/* Footer */}
       <div className="mt-3 flex justify-between items-center">
-        <p className="text-xs text-gray-600">
-          <span className="font-medium text-gray-900">6</span> seats left
-        </p>
+<div className="flex flex-col">
+  <p className="text-xs text-gray-600">
+    <span className="font-medium text-gray-900">
+      {seatsLeft}
+    </span>{" "}
+    seats left
+  </p>
+
+  {showWarning && (
+    <p className="text-xs text-orange-600 font-medium mt-0.5">
+      Few seats left
+    </p>
+  )}
+</div>
 
         <button className="bg-red-600 hover:bg-red-700 transition
           text-white px-4 py-1.5 rounded-md text-sm font-semibold">
