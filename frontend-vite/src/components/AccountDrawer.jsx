@@ -16,24 +16,34 @@ export default function AccountDrawer({
       {open && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-black/40 z-40"
+          className="fixed inset-0 bg-black/50 backdrop-blur-[2px]
+          z-40 transition-opacity duration-300"
         />
       )}
 
       {/* Drawer */}
       <div
         className={`fixed right-0 top-0 h-full w-80 bg-white z-50
-        transform transition-transform duration-300
+        shadow-2xl rounded-l-2xl
+        transform transition-transform duration-500
+        ease-[cubic-bezier(0.4,0,0.2,1)]
         ${open ? "translate-x-0" : "translate-x-full"}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 h-14 border-b">
-          <h2 className="font-semibold text-lg">Account</h2>
-          <button onClick={onClose} className="text-xl">×</button>
+        <div className="flex items-center justify-between px-5 h-16 border-b border-gray-100">
+          <h2 className="font-semibold text-lg tracking-tight">
+            Account
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-2xl text-gray-500 hover:text-black transition"
+          >
+            ×
+          </button>
         </div>
 
         {/* Auth section */}
-        <div className="p-4">
+        <div className="p-5">
           {!token ? (
             <>
               <h3 className="text-xl font-semibold mb-3">
@@ -42,16 +52,17 @@ export default function AccountDrawer({
 
               <button
                 onClick={onLoginClick}
-                className="w-full bg-red-600 text-white py-2 rounded-full font-semibold"
+                className="w-full bg-red-600 hover:bg-red-700 transition
+                text-white py-3 rounded-full font-semibold tracking-wide"
               >
                 Log in
               </button>
 
-              <p className="text-sm mt-3 text-gray-600">
+              <p className="text-sm mt-4 text-gray-600">
                 Don’t have an account?{" "}
                 <span
                   onClick={onSignupClick}
-                  className="text-red-600 font-medium cursor-pointer"
+                  className="text-red-600 font-medium cursor-pointer hover:underline"
                 >
                   Sign up
                 </span>
@@ -73,7 +84,9 @@ export default function AccountDrawer({
                   onClose();
                   window.location.reload();
                 }}
-                className="mt-4 w-full border border-red-600 text-red-600 py-2 rounded-full font-semibold"
+                className="mt-5 w-full border border-red-600
+                text-red-600 hover:bg-red-50 transition
+                py-3 rounded-full font-semibold"
               >
                 Logout
               </button>
@@ -81,23 +94,25 @@ export default function AccountDrawer({
           )}
         </div>
 
-        {/* Drawer sections */}
-        <AccountSection title="My details">
-          <AccountItem label="Bookings" />
-          <AccountItem label="Personal information" />
-        </AccountSection>
+        {/* Sections */}
+        <div className="mt-2">
+          <AccountSection title="My details">
+            <AccountItem label="Bookings" />
+            <AccountItem label="Personal information" />
+          </AccountSection>
 
-        <AccountSection title="Payments">
-          <AccountItem label="HriKri Wallet" />
-        </AccountSection>
+          <AccountSection title="Payments">
+            <AccountItem label="HriKri Wallet" />
+          </AccountSection>
 
-        <AccountSection title="More">
-          <AccountItem label="Offers" />
-          <AccountItem label="Know about HriKri Bus" />
-          <AccountItem label="Help" />
-          <AccountItem label="Cancel Ticket" />
-          <AccountItem label="Reschedule Ticket" />
-        </AccountSection>
+          <AccountSection title="More">
+            <AccountItem label="Offers" />
+            <AccountItem label="Know about HriKri Bus" />
+            <AccountItem label="Help" />
+            <AccountItem label="Cancel Ticket" />
+            <AccountItem label="Reschedule Ticket" />
+          </AccountSection>
+        </div>
       </div>
     </>
   );
