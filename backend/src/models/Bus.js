@@ -30,6 +30,14 @@ const busSchema = new mongoose.Schema(
     price: {
       type: Number,
       required: true
+    },
+    amenities: {
+      type: [String],
+      default: [],
+    },
+    availableDates:{
+      type:[String],
+      required:true
     }
   },
   { timestamps: true }
