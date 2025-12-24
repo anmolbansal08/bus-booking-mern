@@ -4,10 +4,35 @@ const Booking = require("../models/Booking");
 // Add bus (admin)
 exports.createBus = async (req, res) => {
   try {
-    const bus = await Bus.create(req.body);
+    if (!req.body.routeId || !req.body.totalSeats || !req.body.availableDates) {
+  return res.status(400).json({ message: "Missing required fields" });
+}
+const isValidISODate = /^\d{4}-\d{2}-\d{2}$/;
+
+if (
+  !Array.isArray(req.body.availableDates) ||
+  !req.body.availableDates.every(d => isValidISODate.test(d))
+) {
+  return res.status(400).json({
+    message: "availableDates must be in YYYY-MM-DD format"
+  });
+}
+    const bus = await Bus.create({
+      name: req.body.name,
+      routeId: req.body.routeId,          // ✅ REQUIRED
+      price: req.body.price,
+      totalSeats: req.body.totalSeats,    // ✅ REQUIRED
+      seatLayout: req.body.seatLayout,
+      bookedSeats: [],
+      departureTime: req.body.departureTime,
+      arrivalTime: req.body.arrivalTime,
+      amenities: req.body.amenities || [], // ✅ FIXED
+      availableDates:req.body.availableDates
+    });
+
     res.status(201).json(bus);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -15,7 +40,7 @@ exports.createBus = async (req, res) => {
 exports.getBusesByRoute = async (req, res) => {
   const { routeId, date } = req.query;
 
-  const buses = await Bus.find({ routeId });
+  const buses = await Bus.find({ routeId,availableDates:date });
 
   const results = [];
 
@@ -37,7 +62,10 @@ exports.getBusesByRoute = async (req, res) => {
     });
   }
 
-  res.json(results);
+      res.json({
+      total: results.length,   // ✅ REQUIRED
+      buses: results
+    });
 };
 exports.getBusByIdWithAvailability = async (req, res) => {
   const { busId } = req.params;
