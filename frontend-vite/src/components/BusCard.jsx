@@ -1,17 +1,25 @@
 import Amenity from "./Amenity";
 import RatingBadge from "./RatingBadge";
 
-export default function BusCard() {
-    const seatsLeft = 6; // dummy for now
-    const showWarning = seatsLeft <= 5;
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-    const originalPrice = 1199;
-    const price = 999;
-    const discount = originalPrice - price;
+export default function BusCard({bus}) {
+    const {
+  name,
+  price,
+  departureTime,
+  arrivalTime,
+  seatLayout = [],
+  bookedSeats = [],
+  amenities = [],
+} = bus;
 
-    const departureTime = "23:00";
-    const arrivalTime = "06:30";
+const seatsLeft = seatLayout.length - bookedSeats.length;
+const showWarning = seatsLeft <= 5;
 
+// price logic (temporary UI logic)
+const originalPrice = price + 200;
+const discount = originalPrice - price;
     // convert HH:mm → minutes
     const toMinutes = (time) => {
         const [h, m] = time.split(":").map(Number);
@@ -20,6 +28,20 @@ export default function BusCard() {
 
     const isNextDay =
         toMinutes(arrivalTime) < toMinutes(departureTime);
+let durationMinutes =
+  toMinutes(arrivalTime) - toMinutes(departureTime);
+
+// overnight bus
+if (durationMinutes < 0) {
+  durationMinutes += 24 * 60;
+}
+
+const hours = Math.floor(durationMinutes / 60);
+const minutes = durationMinutes % 60;
+
+const duration = `${hours}h ${minutes}m`;
+const navigate = useNavigate();
+const [params] = useSearchParams();
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 mb-3">
 
@@ -27,7 +49,7 @@ export default function BusCard() {
             <div className="flex justify-between items-start">
                 <div>
                     <h3 className="text-base font-semibold text-gray-900">
-                        Volvo AC Sleeper
+                        {name}
                     </h3>
 
                     <div className="flex items-center gap-2 mt-0.5">
@@ -63,7 +85,7 @@ export default function BusCard() {
                 </div>
 
                 <div className="text-center text-xs text-gray-500">
-                    <p>8h 30m</p>
+                    <p>{duration}</p>
                     <div className="h-px w-16 bg-gray-300 my-0.5 mx-auto" />
                     <p>Direct</p>
                 </div>
@@ -84,11 +106,11 @@ export default function BusCard() {
             </div>
 
             {/* Amenities */}
-            <div className="mt-2 flex gap-4">
-                <Amenity icon="❄️" label="AC" />
-                <Amenity icon="🛏️" label="Sleeper" />
-                <Amenity icon="🔌" label="Charging" />
-            </div>
+<div className="mt-2 flex gap-4">
+  {amenities.includes("AC") && <Amenity icon="❄️" label="AC" />}
+  {amenities.includes("SLEEPER") && <Amenity icon="🛏️" label="Sleeper" />}
+  {amenities.includes("CHARGING") && <Amenity icon="🔌" label="Charging" />}
+</div>
 
             {/* Footer */}
             <div className="mt-3 flex justify-between items-center">
@@ -107,10 +129,15 @@ export default function BusCard() {
                     )}
                 </div>
 
-                <button className="bg-red-600 hover:bg-red-700 transition
-          text-white px-4 py-1.5 rounded-md text-sm font-semibold">
-                    View Seats
-                </button>
+<button
+  onClick={() =>
+    navigate(`/seats/${bus._id}?date=${params.get("date")}`)
+  }
+  className="bg-red-600 hover:bg-red-700 transition
+  text-white px-4 py-1.5 rounded-md text-sm font-semibold"
+>
+  View Seats
+</button>
             </div>
         </div>
     );
