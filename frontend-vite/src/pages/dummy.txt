@@ -1,0 +1,11 @@
+db.buses.deleteMany({
+  _id: {
+    $in: [
+      ObjectId("694bc946cb2f91001c702c91"),
+      ObjectId("694bd17eeebeba83494bb8b9"),
+      ObjectId("694bd180eebeba83494bb8bb"),
+      ObjectId("694bd1a4eebeba83494bb8bd"),
+      ObjectId("694bd33c5081d4a948872d6a")
+    ]
+  }
+})

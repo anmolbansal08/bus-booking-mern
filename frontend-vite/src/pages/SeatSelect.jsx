@@ -4,7 +4,7 @@ import api from "../services/api";
 
 export default function SeatSelect() {
   const { busId } = useParams();
-  const date = new URLSearchParams(useLocation().search).get("date");
+  const travelDate = new URLSearchParams(useLocation().search).get("date");
   const [bus, setBus] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const token = localStorage.getItem("token");
@@ -18,7 +18,7 @@ export default function SeatSelect() {
   }, []);
 
   useEffect(() => {
-    api.get(`/buses/${busId}?date=${date}`).then(res => setBus(res.data));
+    api.get(`/buses/${busId}?date=${travelDate}`).then(res => setBus(res.data));
   }, []);
 
   const toggleSeat = seat => {
@@ -29,20 +29,15 @@ export default function SeatSelect() {
     );
   };
 
-  const book = async () => {
-    if (!localStorage.getItem("token")) {
-      alert("Please login");
-      return;
+const book = () => {
+  navigate("/passenger-info", {
+    state: {
+      bus,
+      selectedSeats,
+      travelDate
     }
-
-    await api.post("/bookings", {
-      busId,
-      travelDate: date,
-      seats: selectedSeats
-    });
-
-    alert("Booking successful");
-  };
+  });
+};
 
   if (!bus) return null;
 

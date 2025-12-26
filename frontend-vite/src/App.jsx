@@ -6,6 +6,8 @@ import Register from "./pages/Register";
 import MyBookings from "./pages/MyBookings";
 import Navbar from "./components/Navbar";
 import BusListPage from "./pages/BusListPage";
+import PassengerInfo from "./pages/PassengerInfo";
+import BookingSuccess from "./pages/BookingSuccess";
 
 export default function App() {
   return (
@@ -19,6 +21,8 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/my-bookings" element={<MyBookings />} />
+        <Route path="/passenger-info" element={<PassengerInfo />} />
+        <Route path="/booking-success" element={<BookingSuccess />} />
       </Routes>
     </BrowserRouter>
     </div>

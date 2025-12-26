@@ -2,11 +2,6 @@ const mongoose = require("mongoose");
 
 const bookingSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
     busId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Bus",
@@ -17,13 +12,22 @@ const bookingSchema = new mongoose.Schema(
       required: true
     },
     seats: {
-      type: [String], // ["A1","A2"]
+      type: [String],
       required: true
     },
-    amount: {
-      type: Number,
-      required: true
+    passengers: [
+      {
+        name: String,
+        age: Number,
+        gender: String,
+        seatNumber: String
+      }
+    ],
+    contact: {
+      phone: String,
+      email: String
     },
+    totalAmount: Number,
     status: {
       type: String,
       enum: ["CONFIRMED", "CANCELLED"],
