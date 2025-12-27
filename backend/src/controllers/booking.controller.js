@@ -17,7 +17,16 @@ exports.createBooking = async (req, res) => {
     if (!busId || !travelDate || !seats?.length || !passengers?.length) {
       return res.status(400).json({ message: "Invalid booking data" });
     }
+const bus = await Bus.findById(busId);
 
+if (!bus) {
+  return res.status(404).json({ message: "Bus not found" });
+}
+if (!bus.availableDates.includes(travelDate)) {
+  return res.status(400).json({
+    message: "Bus does not operate on selected date"
+  });
+}
     if (seats.length !== passengers.length) {
       return res
         .status(400)
@@ -38,14 +47,19 @@ exports.createBooking = async (req, res) => {
         .json({ message: "Some seats already booked" });
     }
 
-    const booking = await Booking.create({
-      busId,
-      travelDate,
-      seats,
-      passengers,
-      contact,
-      totalAmount
-    });
+const booking = await Booking.create({
+  busId,
+  travelDate,
+  seats,
+  passengers,
+  contact,
+  totalAmount,
+  status: "PAYMENT_PENDING",
+  payment: {
+    status: "PENDING",
+    method: "MOCK"
+  }
+});
 
     res.status(201).json(booking);
   } catch (err) {
