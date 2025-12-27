@@ -4,63 +4,92 @@ const Bus = require("../models/Bus");
 // Create booking
 exports.createBooking = async (req, res) => {
   try {
-    const userId = req.userId;
-    const {busId, travelDate, seats } = req.body;
-  
-    // 1️⃣ Check if bus exists
-    const bus = await Bus.findById(busId);
-    if (!bus) {
-      return res.status(404).json({ message: "Bus not found" });
-    }
-
-    // 2️⃣ Find already booked seats for this bus + date
-    const existingBookings = await Booking.find({
-      busId,
-      travelDate,
-      status: "CONFIRMED"
-    });
-
-    const bookedSeats = existingBookings.flatMap(b => b.seats);
-
-    // 3️⃣ Check for seat conflict
-    const conflictSeats = seats.filter(seat =>
-      bookedSeats.includes(seat)
-    );
-
-    if (conflictSeats.length > 0) {
-      return res.status(409).json({
-        message: "Some seats are already booked",
-        conflictSeats
-      });
-    }
-
-    // 4️⃣ Calculate amount
-    const amount = seats.length * bus.price;
-
-    // 5️⃣ Create booking
-    const booking = await Booking.create({
-      userId,
+    const {
       busId,
       travelDate,
       seats,
-      amount
+      passengers,
+      contact,
+      totalAmount
+    } = req.body;
+
+    // Basic validation
+    if (!busId || !travelDate || !seats?.length || !passengers?.length) {
+      return res.status(400).json({ message: "Invalid booking data" });
+    }
+
+    if (seats.length !== passengers.length) {
+      return res
+        .status(400)
+        .json({ message: "Seats and passengers count mismatch" });
+    }
+
+    // Seat availability check
+    const alreadyBooked = await Booking.find({
+      busId,
+      travelDate,
+      seats: { $in: seats },
+      status: "CONFIRMED"
     });
 
-    res.status(201).json({
-      message: "Booking confirmed",
-      booking
+    if (alreadyBooked.length) {
+      return res
+        .status(409)
+        .json({ message: "Some seats already booked" });
+    }
+
+    const booking = await Booking.create({
+      busId,
+      travelDate,
+      seats,
+      passengers,
+      contact,
+      totalAmount
     });
 
+    res.status(201).json(booking);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
-
 };
-
 exports.getMyBookings = async (req, res) => {
-  const bookings = await Booking.find({ userId: req.userId })
-    .populate("busId")
-    .sort({ createdAt: -1 });
+  try {
+    const { email } = req.query;
 
-  res.json(bookings);
+    if (!email) {
+      return res.status(400).json({ message: "Email required" });
+    }
+
+    const bookings = await Booking.find({
+      "contact.email": email
+    })
+      .populate("busId")
+      .sort({ createdAt: -1 });
+
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+exports.cancelBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.status === "CANCELLED") {
+      return res.status(409).json({ message: "Booking is already cancelled" });
+    }
+
+    booking.status = "CANCELLED";
+    await booking.save();
+
+    res.json(booking);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
