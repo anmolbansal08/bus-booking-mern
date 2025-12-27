@@ -71,3 +71,25 @@ exports.getMyBookings = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+exports.cancelBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.status === "CANCELLED") {
+      return res.status(409).json({ message: "Booking is already cancelled" });
+    }
+
+    booking.status = "CANCELLED";
+    await booking.save();
+
+    res.json(booking);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

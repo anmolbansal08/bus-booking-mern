@@ -9,3 +9,6 @@ db.buses.deleteMany({
     ]
   }
 })
+
+http://localhost:3000/api/routes/search?source=Delhi&destination=Banglore
+http://localhost:3000/api/routes/search?source=Delhi&destination=Bangalore
