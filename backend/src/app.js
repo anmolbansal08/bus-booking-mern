@@ -16,6 +16,7 @@ app.use("/api/buses", busRoutes);
 
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/payments", require("./routes/payments"));
 
 app.get("/", (req, res) => {
   res.send("Bus Booking API is running");
