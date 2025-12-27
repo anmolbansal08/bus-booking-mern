@@ -1,9 +1,28 @@
 import { useState } from "react";
+import api from "../services/api";
 
-export default function BookingCard({ booking }) {
+export default function BookingCard({ booking, onCancelSuccess }) {
   const [open, setOpen] = useState(false);
   const bus = booking.busId;
+  const cancelBooking = async () => {
+  const confirmed = window.confirm(
+    "Are you sure you want to cancel this booking?"
+  );
 
+  if (!confirmed) return;
+
+  try {
+    await api.patch(
+      `/bookings/${booking._id}/cancel`
+    );
+
+    onCancelSuccess(booking._id);
+  } catch (err) {
+    alert(
+      err.response?.data?.message || "Cancel failed"
+    );
+  }
+};
   return (
     <div className="bg-white rounded-xl shadow p-4">
       {/* SUMMARY */}
@@ -51,6 +70,28 @@ export default function BookingCard({ booking }) {
               {booking.status}
             </span>
           </p>
+          {booking.status === "CONFIRMED" && (
+  <button
+    onClick={cancelBooking}
+    className="
+      mt-4
+      border
+      border-red-600
+      text-red-600
+      px-4
+      py-2
+      rounded-lg
+      hover:bg-red-50
+    "
+  >
+    Cancel Booking
+  </button>
+)}
+{booking.status === "CANCELLED" && (
+  <p className="mt-4 text-sm text-red-600">
+    Booking Cancelled
+  </p>
+)}
         </div>
       )}
     </div>

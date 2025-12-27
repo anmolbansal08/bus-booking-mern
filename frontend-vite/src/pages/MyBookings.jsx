@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import BookingCard from "../components/BookingCard";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
   const navigate = useNavigate();
-
+  
 const email = localStorage.getItem("bookingEmail");
 if (!email) {
   return (
@@ -36,15 +37,27 @@ useEffect(() => {
       </div>
     );
   }
-
+const handleCancelSuccess = (bookingId) => {
+  setBookings(prev =>
+    prev.map(b =>
+      b._id === bookingId
+        ? { ...b, status: "CANCELLED" }
+        : b
+    )
+  );
+};
   return (
     <div className="max-w-5xl mx-auto mt-8 px-4">
       <h2 className="text-xl font-semibold mb-6">My Bookings</h2>
 
       <div className="space-y-4">
-        {bookings.map(booking => (
-          <BookingCard key={booking._id} booking={booking} />
-        ))}
+{bookings.map(booking => (
+  <BookingCard
+    key={booking._id}
+    booking={booking}
+    onCancelSuccess={handleCancelSuccess}
+  />
+))}
       </div>
     </div>
   );
