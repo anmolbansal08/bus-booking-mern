@@ -28,10 +28,21 @@ const bookingSchema = new mongoose.Schema(
       email: String
     },
     totalAmount: Number,
-    status: {
-      type: String,
-      enum: ["CONFIRMED", "CANCELLED"],
-      default: "CONFIRMED"
+status: {
+  type: String,
+  enum: ["PAYMENT_PENDING", "CONFIRMED", "CANCELLED"],
+  default: "PAYMENT_PENDING"
+},
+    payment: {
+      status: {
+        type: String,
+        enum: ["PENDING", "SUCCESS", "FAILED"],
+        default: "PENDING"
+      },
+      method: {
+        type: String,
+        default: "MOCK"
+      }
     }
   },
   { timestamps: true }

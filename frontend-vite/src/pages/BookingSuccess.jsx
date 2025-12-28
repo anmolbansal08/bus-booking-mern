@@ -10,9 +10,12 @@ export default function BookingSuccess() {
 
   return (
     <div className="max-w-xl mx-auto mt-20 text-center">
-      <h2 className="text-2xl font-semibold text-green-600">
-        Booking Confirmed 🎉
-      </h2>
+<h2 className="text-2xl font-semibold text-green-600">
+  Payment Successful 🎉
+</h2>
+<p className="mt-2">
+  Your booking is confirmed.
+</p>
 
       <p className="mt-3">
         Seats: {booking.seats.join(", ")}

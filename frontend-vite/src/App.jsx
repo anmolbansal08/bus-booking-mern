@@ -8,7 +8,7 @@ import Navbar from "./components/Navbar";
 import BusListPage from "./pages/BusListPage";
 import PassengerInfo from "./pages/PassengerInfo";
 import BookingSuccess from "./pages/BookingSuccess";
-
+import Payment from "./pages/Payment";
 export default function App() {
   return (
         <div className="min-h-screen bg-gray-50">
@@ -23,6 +23,7 @@ export default function App() {
         <Route path="/my-bookings" element={<MyBookings />} />
         <Route path="/passenger-info" element={<PassengerInfo />} />
         <Route path="/booking-success" element={<BookingSuccess />} />
+        <Route path="/payment" element={<Payment />} />
       </Routes>
     </BrowserRouter>
     </div>
