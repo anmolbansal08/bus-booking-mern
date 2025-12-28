@@ -59,8 +59,22 @@ export default function SearchBar() {
   }, [showCalendar]);
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 px-6">
-      {/* MAIN SEARCH PILL */}
+  <div className="bg-gray-50 py-16">
+    <div className="max-w-6xl mx-auto px-4 text-center mb-10">
+      <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+        India’s No.1 Bus Ticket Booking Platform
+      </h1>
+
+      <p className="mt-3 text-gray-600">
+        Trusted by millions • Safe & Reliable
+      </p>
+    </div>
+
+    {/* EXISTING SEARCH CARD – UNCHANGED */}
+    <div className="max-w-4xl mx-auto px-4">
+      <div className="bg-white rounded-2xl shadow p-6">
+        {/* 🔽 KEEP YOUR EXISTING SEARCH JSX HERE EXACTLY */}
+              {/* MAIN SEARCH PILL */}
       <div className="bg-white rounded-2xl shadow-md px-4 py-3">
 <div className="flex flex-col md:flex-row items-center divide-y md:divide-y-0">
           {/* FROM */}
@@ -157,6 +171,12 @@ export default function SearchBar() {
           Search Buses
         </button>
       </div>
+      </div>
     </div>
+
+    <div className="mt-6 text-center text-sm text-gray-600">
+      Free Cancellation • Instant Refunds*
+    </div>
+  </div>
   );
 }
