@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import BookingTimeline from "../components/BookingTimeline";
 
 export default function BookingSuccess() {
   const { state } = useLocation();
@@ -10,6 +11,7 @@ export default function BookingSuccess() {
 
   return (
     <div className="max-w-xl mx-auto mt-20 text-center">
+      <BookingTimeline currentStep={4} />
 <h2 className="text-2xl font-semibold text-green-600">
   Payment Successful 🎉
 </h2>
