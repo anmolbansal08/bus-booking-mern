@@ -13,7 +13,6 @@ export default function PassengerInfo() {
     return <p className="text-center mt-10">Invalid access</p>;
   }
 
-  // Create passenger state per seat
   const [passengers, setPassengers] = useState(
     selectedSeats.map(seat => ({
       seatNumber: seat,
@@ -25,14 +24,12 @@ export default function PassengerInfo() {
 
   const [errors, setErrors] = useState({});
 
-  // Handle input
   const updatePassenger = (index, field, value) => {
     const copy = [...passengers];
     copy[index][field] = value;
     setPassengers(copy);
   };
 
-  // Validation
   const validate = () => {
     const newErrors = {};
 
@@ -46,72 +43,77 @@ export default function PassengerInfo() {
     return Object.keys(newErrors).length === 0;
   };
 
-const continueBooking = async () => {
-  if (!validate()) return;
-
-  if (!contact.phone || !contact.email) {
-    alert("Contact details required");
-    return;
-  }
-
-  try {
-    const res = await api.post("/bookings", {
-      busId: bus._id,
-      travelDate,
-      seats: selectedSeats,
-      passengers,
-      contact,
-      totalAmount: selectedSeats.length * bus.price // simple calc
-    });
-
-    navigate("/booking-success", {
-      state: { booking: res.data }
-    });
-    localStorage.setItem(
-  "bookingEmail",
-  contact.email
-);
-  } catch (err) {
-    alert(
-      err.response?.data?.message || "Booking failed. Try again."
-    );
-  }
-};
-
   const [contact, setContact] = useState({
-  phone: "",
-  email: ""
-});
+    phone: "",
+    email: ""
+  });
+
+  const continueBooking = async () => {
+    if (!validate()) return;
+
+    if (!contact.phone || !contact.email) {
+      alert("Contact details required");
+      return;
+    }
+
+    try {
+      const res = await api.post("/bookings", {
+        busId: bus._id,
+        travelDate,
+        seats: selectedSeats,
+        passengers,
+        contact,
+        totalAmount: selectedSeats.length * bus.price
+      });
+
+      // ✅ store email BEFORE navigation
+      localStorage.setItem("bookingEmail", contact.email);
+
+      // ✅ go to PAYMENT page (not success)
+      navigate("/payment", {
+        state: {
+          booking: res.data,
+          bus,
+          travelDate,
+          seats: selectedSeats
+        }
+      });
+    } catch (err) {
+      alert(
+        err.response?.data?.message || "Booking failed. Try again."
+      );
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto mt-8 px-4">
-      {/* Header */}
       <div className="bg-white rounded-xl shadow p-5 mb-6">
-  <h3 className="font-semibold mb-3">Contact details</h3>
+        <h3 className="font-semibold mb-3">Contact details</h3>
 
-  <input
-    className="w-full border rounded-lg p-2 mb-3"
-    placeholder="Mobile number"
-    value={contact.phone}
-    onChange={e =>
-      setContact({ ...contact, phone: e.target.value })
-    }
-  />
+        <input
+          className="w-full border rounded-lg p-2 mb-3"
+          placeholder="Mobile number"
+          value={contact.phone}
+          onChange={e =>
+            setContact({ ...contact, phone: e.target.value })
+          }
+        />
 
-  <input
-    className="w-full border rounded-lg p-2"
-    placeholder="Email"
-    value={contact.email}
-    onChange={e =>
-      setContact({ ...contact, email: e.target.value })
-    }
-  />
-</div>
+        <input
+          className="w-full border rounded-lg p-2"
+          placeholder="Email"
+          value={contact.email}
+          onChange={e =>
+            setContact({ ...contact, email: e.target.value })
+          }
+        />
+      </div>
+
       <h2 className="text-lg font-semibold mb-4">
         Passenger Information
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* LEFT */}
         <div className="md:col-span-2 space-y-6">
           {passengers.map((p, idx) => (
             <div
@@ -122,7 +124,6 @@ const continueBooking = async () => {
                 Passenger {idx + 1} – Seat {p.seatNumber}
               </h3>
 
-              {/* Name */}
               <div className="mb-3">
                 <label className="text-sm">Name *</label>
                 <input
@@ -139,7 +140,6 @@ const continueBooking = async () => {
                 )}
               </div>
 
-              {/* Age */}
               <div className="mb-3">
                 <label className="text-sm">Age *</label>
                 <input
@@ -157,7 +157,6 @@ const continueBooking = async () => {
                 )}
               </div>
 
-              {/* Gender */}
               <div>
                 <label className="text-sm">Gender *</label>
                 <div className="flex gap-4 mt-2">
@@ -165,11 +164,7 @@ const continueBooking = async () => {
                     <label
                       key={g}
                       className={`border rounded-lg px-4 py-2 cursor-pointer
-                        ${
-                          p.gender === g
-                            ? "border-red-500"
-                            : ""
-                        }
+                        ${p.gender === g ? "border-red-500" : ""}
                       `}
                     >
                       <input
@@ -193,7 +188,6 @@ const continueBooking = async () => {
           ))}
         </div>
 
-        {/* RIGHT SUMMARY */}
         <div className="bg-white rounded-xl shadow p-5 h-fit">
           <h3 className="font-semibold mb-4">Trip Summary</h3>
           <p className="text-sm">{bus.name}</p>
