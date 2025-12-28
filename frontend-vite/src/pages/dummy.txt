@@ -1,14 +1,97 @@
-db.buses.deleteMany({
-  _id: {
-    $in: [
-      ObjectId("694bc946cb2f91001c702c91"),
-      ObjectId("694bd17eeebeba83494bb8b9"),
-      ObjectId("694bd180eebeba83494bb8bb"),
-      ObjectId("694bd1a4eebeba83494bb8bd"),
-      ObjectId("694bd33c5081d4a948872d6a")
-    ]
-  }
-})
+      {/* MAIN SEARCH PILL */}
+      <div className="bg-white rounded-2xl shadow-md px-4 py-3">
+<div className="flex flex-col md:flex-row items-center divide-y md:divide-y-0">
+          {/* FROM */}
+          <div className="flex-1 px-4 py-2">
+            <AutocompleteInput
+              label="From"
+              value={source}
+              onChange={setSource}
+              suggestions={CITIES}
+              inputClass="text-base font-semibold"
+            />
+          </div>
 
-http://localhost:3000/api/routes/search?source=Delhi&destination=Banglore
-http://localhost:3000/api/routes/search?source=Delhi&destination=Bangalore
+          {/* SWAP */}
+          <div className="px-3 flex items-center">
+            <button
+              onClick={swapLocations}
+              className="h-9 w-9 rounded-full border flex items-center justify-center hover:bg-gray-100 transition"
+              title="Swap"
+            >
+              ⇄
+            </button>
+          </div>
+
+          {/* TO */}
+          <div className="flex-1 px-4 py-2">
+            <AutocompleteInput
+              label="To"
+              value={destination}
+              onChange={setDestination}
+              suggestions={CITIES}
+              inputClass="text-base font-semibold"
+            />
+          </div>
+
+          {/* DATE */}
+          <div className="relative px-4 py-2 min-w-[200px]">
+            <p className="text-xs text-gray-500 mb-1">Date of Journey</p>
+
+            <button
+              ref={dateButtonRef}
+              onClick={() => setShowCalendar(prev => !prev)}
+              className="w-full text-left hover:bg-gray-50 rounded-lg px-2 py-1"
+            >
+              <p className="text-base font-semibold">
+                {new Date(date).toLocaleDateString("en-IN", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric"
+                })}
+              </p>
+              <p className="text-xs text-gray-400">
+                {date === today
+                  ? "Today"
+                  : date ===
+                    new Date(
+                      new Date().setDate(new Date().getDate() + 1)
+                    )
+                      .toISOString()
+                      .split("T")[0]
+                  ? "Tomorrow"
+                  : ""}
+              </p>
+            </button>
+
+            {showCalendar && (
+              <div ref={calendarRef} className="absolute z-20 mt-2">
+                <CalendarPicker
+                  value={date}
+                  onChange={(d) => {
+                    setDate(d);
+                    setShowCalendar(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* CTA */}
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={search}
+          className="
+            bg-red-600 hover:bg-red-700
+            text-white font-semibold
+            px-12 py-3
+            rounded-full
+            shadow-md
+            transition
+          "
+        >
+          Search Buses
+        </button>
+      </div>

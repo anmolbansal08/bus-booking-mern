@@ -57,7 +57,11 @@ export default function SearchBar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showCalendar]);
-
+const setQuickDate = (days) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  setDate(d.toISOString().split("T")[0]);
+};
   return (
   <div className="bg-gray-50 py-16">
     <div className="max-w-6xl mx-auto px-4 text-center mb-10">
@@ -154,7 +158,21 @@ export default function SearchBar() {
           </div>
         </div>
       </div>
+<div className="flex justify-center gap-4 mt-4">
+  <button
+    onClick={() => setQuickDate(0)}
+    className="px-4 py-2 text-sm border rounded-full hover:bg-gray-100"
+  >
+    Today
+  </button>
 
+  <button
+    onClick={() => setQuickDate(1)}
+    className="px-4 py-2 text-sm border rounded-full hover:bg-gray-100"
+  >
+    Tomorrow
+  </button>
+</div>
       {/* CTA */}
       <div className="flex justify-center mt-4">
         <button
