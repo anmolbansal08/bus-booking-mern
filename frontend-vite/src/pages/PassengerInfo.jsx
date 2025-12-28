@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../services/api";
+import BookingTimeline from "../components/BookingTimeline";
 
 export default function PassengerInfo() {
   const { state } = useLocation();
@@ -87,6 +88,7 @@ export default function PassengerInfo() {
 
   return (
     <div className="max-w-6xl mx-auto mt-8 px-4">
+          <BookingTimeline currentStep={2} />
       <div className="bg-white rounded-xl shadow p-5 mb-6">
         <h3 className="font-semibold mb-3">Contact details</h3>
 

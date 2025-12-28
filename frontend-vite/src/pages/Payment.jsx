@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
+import BookingTimeline from "../components/BookingTimeline";
 
 export default function Payment() {
   const { state } = useLocation();
@@ -66,6 +67,7 @@ const payNow = async () => {
 
   return (
     <div className="max-w-xl mx-auto mt-16 px-4">
+      <BookingTimeline currentStep={3} />
       <div className="bg-white rounded-xl shadow p-6">
         <h2 className="text-lg font-semibold mb-4">
           Payment
