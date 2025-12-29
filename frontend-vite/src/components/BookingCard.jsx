@@ -66,11 +66,19 @@ export default function BookingCard({ booking, onCancelSuccess }) {
 
           <p>
             <strong>Status:</strong>{" "}
-            <span className="text-green-600">
-              {booking.status}
-            </span>
+<span
+  className={
+    booking.status === "CONFIRMED"
+      ? "text-green-600"
+      : booking.status === "CANCELLED"
+      ? "text-red-600"
+      : "text-yellow-600"
+  }
+>
+  {booking.status}
+</span>
           </p>
-          {booking.status === "CONFIRMED" && (
+{["PAYMENT_PENDING", "CONFIRMED"].includes(booking.status) && (
   <button
     onClick={cancelBooking}
     className="
