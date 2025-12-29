@@ -31,8 +31,10 @@ export default function SearchBar() {
       `/routes/search?source=${source}&destination=${destination}`
     );
 
-    if (!res.data.length) return;
-
+if (!res.data.length) {
+  navigate(`/buses?noResults=true&date=${date}`);
+  return;
+}
     navigate(`/buses?routeId=${res.data[0]._id}&date=${date}`);
   };
 
@@ -115,64 +117,66 @@ const setQuickDate = (days) => {
           </div>
 
           {/* DATE */}
-          <div className="relative px-4 py-2 min-w-[200px]">
-            <p className="text-xs text-gray-500 mb-1">Date of Journey</p>
+<div className="relative px-4 py-2 min-w-[200px]">
+  <p className="text-xs text-gray-500 mb-1">Date of Journey</p>
 
-            <button
-              ref={dateButtonRef}
-              onClick={() => setShowCalendar(prev => !prev)}
-              className="w-full text-left hover:bg-gray-50 rounded-lg px-2 py-1"
-            >
-              <p className="text-base font-semibold">
-                {new Date(date).toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric"
-                })}
-              </p>
-              <p className="text-xs text-gray-400">
-                {date === today
-                  ? "Today"
-                  : date ===
-                    new Date(
-                      new Date().setDate(new Date().getDate() + 1)
-                    )
-                      .toISOString()
-                      .split("T")[0]
-                  ? "Tomorrow"
-                  : ""}
-              </p>
-            </button>
+  <button
+    ref={dateButtonRef}
+    onClick={() => setShowCalendar(prev => !prev)}
+    className="w-full text-left hover:bg-gray-50 rounded-lg px-2 py-1"
+  >
+    <p className="text-base font-semibold">
+      {new Date(date).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric"
+      })}
+    </p>
+    <p className="text-xs text-gray-400">
+      {date === today
+        ? "Today"
+        : date ===
+          new Date(
+            new Date().setDate(new Date().getDate() + 1)
+          )
+            .toISOString()
+            .split("T")[0]
+        ? "Tomorrow"
+        : ""}
+    </p>
+  </button>
 
-            {showCalendar && (
-              <div ref={calendarRef} className="absolute z-20 mt-2">
-                <CalendarPicker
-                  value={date}
-                  onChange={(d) => {
-                    setDate(d);
-                    setShowCalendar(false);
-                  }}
-                />
-              </div>
-            )}
-          </div>
+  {/* ✅ QUICK DATE SHORTCUTS (NEW LOCATION) */}
+  <div className="flex gap-2 mt-2">
+    <button
+      onClick={() => setQuickDate(0)}
+      className="px-3 py-1 text-xs border rounded-full hover:bg-gray-100"
+    >
+      Today
+    </button>
+
+    <button
+      onClick={() => setQuickDate(1)}
+      className="px-3 py-1 text-xs border rounded-full hover:bg-gray-100"
+    >
+      Tomorrow
+    </button>
+  </div>
+
+  {showCalendar && (
+    <div ref={calendarRef} className="absolute z-20 mt-2">
+      <CalendarPicker
+        value={date}
+        onChange={(d) => {
+          setDate(d);
+          setShowCalendar(false);
+        }}
+      />
+    </div>
+  )}
+</div>
         </div>
       </div>
-<div className="flex justify-center gap-4 mt-4">
-  <button
-    onClick={() => setQuickDate(0)}
-    className="px-4 py-2 text-sm border rounded-full hover:bg-gray-100"
-  >
-    Today
-  </button>
-
-  <button
-    onClick={() => setQuickDate(1)}
-    className="px-4 py-2 text-sm border rounded-full hover:bg-gray-100"
-  >
-    Tomorrow
-  </button>
-</div>
       {/* CTA */}
       <div className="flex justify-center mt-4">
         <button
