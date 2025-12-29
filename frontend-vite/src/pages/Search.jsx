@@ -17,7 +17,12 @@ export default function SearchBar() {
 
   const calendarRef = useRef(null);
   const dateButtonRef = useRef(null);
-
+const [recentSearches, setRecentSearches] = useState([]);
+useEffect(() => {
+  const stored =
+    JSON.parse(localStorage.getItem("recentSearches")) || [];
+  setRecentSearches(stored);
+}, []);
   const swapLocations = () => {
     setSource(destination);
     setDestination(source);
@@ -30,7 +35,7 @@ export default function SearchBar() {
     const res = await api.get(
       `/routes/search?source=${source}&destination=${destination}`
     );
-
+saveRecentSearch();
 if (!res.data.length) {
   navigate(`/buses?noResults=true&date=${date}`);
   return;
@@ -67,6 +72,29 @@ const setQuickDate = (days) => {
 const selectPopularRoute = (from, to) => {
   setSource(from);
   setDestination(to);
+};
+const saveRecentSearch = () => {
+  const existing =
+    JSON.parse(localStorage.getItem("recentSearches")) || [];
+
+  const newEntry = { source, destination, date };
+
+  const updated = [
+    newEntry,
+    ...existing.filter(
+      s =>
+        !(
+          s.source === source &&
+          s.destination === destination &&
+          s.date === date
+        )
+    )
+  ].slice(0, 3);
+
+  localStorage.setItem(
+    "recentSearches",
+    JSON.stringify(updated)
+  );
 };
   return (
     <>
@@ -246,6 +274,40 @@ const selectPopularRoute = (from, to) => {
     </div>
   </div>
 </div>
+{/* RECENTLY SEARCHED */}
+{recentSearches.length > 0 && (
+  <div className="bg-white py-10">
+    <div className="max-w-6xl mx-auto px-4">
+      <h2 className="text-xl font-semibold text-gray-800 mb-6">
+        Recently Searched
+      </h2>
+
+      <div className="flex flex-wrap gap-4">
+        {recentSearches.map((s, idx) => (
+          <button
+            key={idx}
+            onClick={() => {
+              setSource(s.source);
+              setDestination(s.destination);
+              setDate(s.date);
+            }}
+            className="border rounded-xl px-4 py-3 text-left hover:shadow-sm transition"
+          >
+            <p className="font-semibold text-gray-800">
+              {s.source} → {s.destination}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              {new Date(s.date).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short"
+              })}
+            </p>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
 {/* POPULAR ROUTES */}
 <div className="bg-white py-12">
   <div className="max-w-6xl mx-auto px-4">
