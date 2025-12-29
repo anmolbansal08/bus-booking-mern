@@ -1,6 +1,7 @@
 const Bus = require("../models/Bus");
 const Booking = require("../models/Booking");
 
+const PAYMENT_EXPIRY_MINUTES=10;
 // Add bus (admin)
 exports.createBus = async (req, res) => {
   try {
@@ -49,8 +50,7 @@ const expiryTime = new Date(
 
 await Booking.updateMany(
   {
-    busId,
-    travelDate,
+    travelDate: date,
     status: "PAYMENT_PENDING",
     createdAt: { $lt: expiryTime }
   },
