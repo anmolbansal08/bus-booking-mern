@@ -96,13 +96,25 @@ exports.cancelBooking = async (req, res) => {
     }
 
     if (booking.status === "CANCELLED") {
-      return res.status(409).json({ message: "Booking is already cancelled" });
+      return res.status(409).json({ message: "Booking already cancelled" });
     }
 
+    if (booking.status === "EXPIRED") {
+      return res
+        .status(409)
+        .json({ message: "Expired booking cannot be cancelled" });
+    }
+
+    // PAYMENT_PENDING or CONFIRMED
     booking.status = "CANCELLED";
+    booking.cancelledAt = new Date();
+
     await booking.save();
 
-    res.json(booking);
+    res.json({
+      message: "Booking cancelled successfully",
+      booking
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

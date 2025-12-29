@@ -43,13 +43,27 @@ exports.getBusesByRoute = async (req, res) => {
   const buses = await Bus.find({ routeId,availableDates:date });
 
   const results = [];
+const expiryTime = new Date(
+  Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
+);
 
+await Booking.updateMany(
+  {
+    busId,
+    travelDate,
+    status: "PAYMENT_PENDING",
+    createdAt: { $lt: expiryTime }
+  },
+  {
+    $set: { status: "EXPIRED" }
+  }
+);
   for (let bus of buses) {
-    const bookings = await Booking.find({
+const bookings = await Booking.find({
       busId: bus._id,
       travelDate: date,
-      status: "CONFIRMED"
-    });
+  status: { $in: ["PAYMENT_PENDING", "CONFIRMED"] }
+});
 
     const bookedSeats = bookings.flatMap(b => b.seats);
 
@@ -75,12 +89,27 @@ exports.getBusByIdWithAvailability = async (req, res) => {
   if (!bus) {
     return res.status(404).json({ message: "Bus not found" });
   }
+const expiryTime = new Date(
+  Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
+);
 
-  const bookings = await Booking.find({
+await Booking.updateMany(
+  {
     busId,
-    travelDate: date,
-    status: "CONFIRMED"
-  });
+    travelDate,
+    status: "PAYMENT_PENDING",
+    createdAt: { $lt: expiryTime }
+  },
+  {
+    $set: { status: "EXPIRED" }
+  }
+);
+
+const bookings = await Booking.find({
+  busId,
+  travelDate: date,
+  status: { $in: ["PAYMENT_PENDING", "CONFIRMED"] }
+});
 
   const bookedSeats = bookings.flatMap(b => b.seats);
 
