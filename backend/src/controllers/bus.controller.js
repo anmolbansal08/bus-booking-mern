@@ -45,11 +45,11 @@ exports.getBusesByRoute = async (req, res) => {
   const results = [];
 
   for (let bus of buses) {
-    const bookings = await Booking.find({
+const bookings = await Booking.find({
       busId: bus._id,
       travelDate: date,
-      status: "CONFIRMED"
-    });
+  status: { $in: ["PAYMENT_PENDING", "CONFIRMED"] }
+});
 
     const bookedSeats = bookings.flatMap(b => b.seats);
 
@@ -76,11 +76,11 @@ exports.getBusByIdWithAvailability = async (req, res) => {
     return res.status(404).json({ message: "Bus not found" });
   }
 
-  const bookings = await Booking.find({
-    busId,
-    travelDate: date,
-    status: "CONFIRMED"
-  });
+const bookings = await Booking.find({
+  busId,
+  travelDate: date,
+  status: { $in: ["PAYMENT_PENDING", "CONFIRMED"] }
+});
 
   const bookedSeats = bookings.flatMap(b => b.seats);
 
