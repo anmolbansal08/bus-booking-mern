@@ -98,9 +98,9 @@ const saveRecentSearch = () => {
 };
   return (
     <>
-  <div className="bg-gray-50 py-16">
+  <div className="bg-gray-50 py-12">
     <div className="max-w-6xl mx-auto px-4 text-center mb-10">
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+      <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
         India’s No.1 Bus Ticket Booking Platform
       </h1>
 
@@ -219,7 +219,7 @@ const saveRecentSearch = () => {
             text-white font-semibold
             px-12 py-3
             rounded-full
-            shadow-md
+            shadow-lg
             transition
           "
         >
@@ -276,8 +276,8 @@ const saveRecentSearch = () => {
 </div>
 {/* RECENTLY SEARCHED */}
 {recentSearches.length > 0 && (
-  <div className="bg-white py-10">
-    <div className="max-w-6xl mx-auto px-4">
+<div className="bg-gray-50 py-10">
+      <div className="max-w-6xl mx-auto px-4">
       <h2 className="text-xl font-semibold text-gray-800 mb-6">
         Recently Searched
       </h2>
@@ -309,8 +309,7 @@ const saveRecentSearch = () => {
   </div>
 )}
 {/* POPULAR ROUTES */}
-<div className="bg-white py-12">
-  <div className="max-w-6xl mx-auto px-4">
+<div className="bg-white py-12 mt-4">  <div className="max-w-6xl mx-auto px-4">
     <h2 className="text-xl font-semibold text-gray-800 mb-6">
       Popular Routes
     </h2>
