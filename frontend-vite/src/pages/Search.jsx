@@ -4,7 +4,7 @@ import { CITIES } from "../constants/cities";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import CalendarPicker from "../components/CalendarPicker";
-
+import { POPULAR_ROUTES  } from "../constants/popular-routes";
 export default function SearchBar() {
   const navigate = useNavigate();
 
@@ -64,7 +64,12 @@ const setQuickDate = (days) => {
   d.setDate(d.getDate() + days);
   setDate(d.toISOString().split("T")[0]);
 };
+const selectPopularRoute = (from, to) => {
+  setSource(from);
+  setDestination(to);
+};
   return (
+    <>
   <div className="bg-gray-50 py-16">
     <div className="max-w-6xl mx-auto px-4 text-center mb-10">
       <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
@@ -200,5 +205,49 @@ const setQuickDate = (days) => {
       Free Cancellation • Instant Refunds*
     </div>
   </div>
+  {/* TRUST STRIP */}
+<div className="bg-gray-50 border-t">
+    <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-center gap-6 text-sm text-gray-700">
+<div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">      <span className="text-green-600">✔</span>
+      <span>Safe Payments</span>
+    </div>
+
+<div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">      <span className="text-green-600">✔</span>
+      <span>Verified Operators</span>
+    </div>
+
+<div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">      <span className="text-green-600">✔</span>
+      <span>24x7 Customer Support</span>
+    </div>
+  </div>
+</div>
+{/* POPULAR ROUTES */}
+<div className="bg-white py-12">
+  <div className="max-w-6xl mx-auto px-4">
+    <h2 className="text-xl font-semibold text-gray-800 mb-6">
+      Popular Routes
+    </h2>
+
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {POPULAR_ROUTES.map((route, idx) => (
+        <button
+          key={idx}
+          onClick={() =>
+            selectPopularRoute(route.from, route.to)
+          }
+          className="border rounded-xl px-4 py-3 text-left hover:shadow-sm hover:border-gray-300 transition"
+        >
+          <p className="font-semibold text-gray-800">
+            {route.from} → {route.to}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            View buses
+          </p>
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+</>
   );
 }
