@@ -45,12 +45,29 @@ exports.verifyRazorpayPayment = async (req, res) => {
     return res.status(400).json({ message: "Invalid payment signature" });
   }
 
-  const booking = await Booking.findById(bookingId);
-  booking.status = "CONFIRMED";
-  booking.payment.status = "SUCCESS";
-  booking.payment.paymentId = razorpay_payment_id;
+const booking = await Booking.findById(bookingId);
 
-  await booking.save();
+if (!booking) {
+  return res.status(404).json({ message: "Booking not found" });
+}
 
-  res.json({ success: true });
+if (booking.status !== "PAYMENT_PENDING") {
+  return res
+    .status(409)
+    .json({ message: "Booking already processed" });
+}
+
+booking.status = "CONFIRMED";
+booking.payment = {
+  paymentId: razorpay_payment_id,
+  orderId: razorpay_order_id,
+  paidAt: new Date()
+};
+
+await booking.save();
+
+res.json({
+  message: "Payment verified and booking confirmed",
+  booking
+});
 };
