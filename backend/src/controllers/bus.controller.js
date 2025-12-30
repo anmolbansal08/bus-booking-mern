@@ -70,9 +70,9 @@ const bookings = await Booking.find({
     results.push({
       ...bus.toObject(),
       bookedSeats,
-      availableSeats: bus.seatLayout.filter(
-        seat => !bookedSeats.includes(seat)
-      )
+availableSeats: bus.seatLayout.filter(
+  seat => !bookedSeats.includes(seat.seatNumber)
+)
     });
   }
 
@@ -96,7 +96,7 @@ const expiryTime = new Date(
 await Booking.updateMany(
   {
     busId,
-    travelDate,
+    travelDate:date,
     status: "PAYMENT_PENDING",
     createdAt: { $lt: expiryTime }
   },
@@ -117,7 +117,6 @@ const bookings = await Booking.find({
     ...bus.toObject(),
     bookedSeats,
     availableSeats: bus.seatLayout.filter(
-      seat => !bookedSeats.includes(seat)
-    )
+seat => !bookedSeats.includes(seat.seatNumber)    )
   });
 };

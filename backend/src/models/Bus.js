@@ -23,14 +23,14 @@ const busSchema = new mongoose.Schema(
       type: Number,
       required: true
     },
-    seatLayout: {
-      type: [String], // ["A1","A2","B1"...]
-      required: true
-    },
-    price: {
-      type: Number,
-      required: true
-    },
+seatLayout: [
+  {
+    seatNumber: { type: String, required: true },
+    deck: { type: String, enum: ["LOWER", "UPPER"], required: true },
+    type: { type: String, enum: ["SEATER", "SLEEPER"], required: true },
+    price: { type: Number, required: true }
+  }
+],
     amenities: {
       type: [String],
       default: [],
