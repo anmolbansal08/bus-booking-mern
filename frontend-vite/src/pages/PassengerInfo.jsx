@@ -58,15 +58,21 @@ export default function PassengerInfo() {
     }
 
     try {
+      const totalAmount = selectedSeats?.reduce((sum, seatNo) => {
+  const seat = bus.seatLayout.find(
+    s => s.seatNumber === seatNo
+  );
+  return sum + (seat?.price || 0);
+}, 0);
       const res = await api.post("/bookings", {
         busId: bus._id,
         travelDate,
         seats: selectedSeats,
         passengers,
         contact,
-        totalAmount: selectedSeats.length * bus.price
+        totalAmount: totalAmount
       });
-
+      console.log(selectedSeats.length,totalAmount);
       // ✅ store email BEFORE navigation
       localStorage.setItem("bookingEmail", contact.email);
 
