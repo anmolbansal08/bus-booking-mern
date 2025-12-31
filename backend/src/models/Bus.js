@@ -19,25 +19,51 @@ const busSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    totalSeats: {
-      type: Number,
-      required: true
-    },
-    seatLayout: {
-      type: [String], // ["A1","A2","B1"...]
-      required: true
-    },
-    price: {
-      type: Number,
-      required: true
-    },
+    seatLayout: [
+      {
+        seatNumber: { type: String, required: true },
+        deck: { type: String, enum: ["LOWER", "UPPER"], required: true },
+        type: { type: String, enum: ["SEATER", "SLEEPER"], required: true },
+        price: { type: Number, required: true }
+      }
+    ],
     amenities: {
       type: [String],
       default: [],
     },
-    availableDates:{
-      type:[String],
-      required:true
+    availableDates: {
+      type: [String],
+      required: true
+    },
+    busInfo: {
+      highlights: [String],        // why book this bus
+      routeStops: [String],        // ordered city/stop names
+      boardingPoints: [
+        {
+          name: String,
+          time: String,
+          address: String
+        }
+      ],
+      droppingPoints: [
+        {
+          name: String,
+          time: String,
+          address: String
+        }
+      ],
+      restStop: {
+        name: String,
+        time: String,
+        durationMins: Number
+      },
+      policies: {
+        cancellation: String,
+        luggage: String,
+        pets: String
+      },
+        type: Object,
+        default: {}
     }
   },
   { timestamps: true }
