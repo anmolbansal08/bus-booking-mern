@@ -2,8 +2,13 @@ const mongoose = require("mongoose");
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log("✅ MongoDB connected");
+const mongoUri =
+  process.env.RUNTIME === "docker"
+    ? process.env.MONGO_URI_DOCKER
+    : process.env.MONGO_URI_LOCAL;
+
+await mongoose.connect(mongoUri);    
+console.log("✅ MongoDB connected");
   } catch (error) {
   console.error("❌ MongoDB connection failed");
   console.error(error.message);
