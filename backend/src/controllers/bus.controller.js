@@ -5,7 +5,7 @@ const PAYMENT_EXPIRY_MINUTES=10;
 // Add bus (admin)
 exports.createBus = async (req, res) => {
   try {
-    if (!req.body.routeId || !req.body.totalSeats || !req.body.availableDates) {
+    if (!req.body.routeId || !req.body.availableDates) {
   return res.status(400).json({ message: "Missing required fields" });
 }
 const isValidISODate = /^\d{4}-\d{2}-\d{2}$/;
@@ -21,14 +21,14 @@ if (
     const bus = await Bus.create({
       name: req.body.name,
       routeId: req.body.routeId,          // ✅ REQUIRED
-      price: req.body.price,
-      totalSeats: req.body.totalSeats,    // ✅ REQUIRED
+      price: req.body.price,   // ✅ REQUIRED
       seatLayout: req.body.seatLayout,
       bookedSeats: [],
       departureTime: req.body.departureTime,
       arrivalTime: req.body.arrivalTime,
       amenities: req.body.amenities || [], // ✅ FIXED
-      availableDates:req.body.availableDates
+      availableDates:req.body.availableDates,
+      busInfo:req.body.busInfo
     });
 
     res.status(201).json(bus);
@@ -58,6 +58,7 @@ await Booking.updateMany(
     $set: { status: "EXPIRED" }
   }
 );
+console.log("bused",buses)
   for (let bus of buses) {
 const bookings = await Booking.find({
       busId: bus._id,

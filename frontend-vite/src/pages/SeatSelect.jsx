@@ -8,6 +8,8 @@ export default function SeatSelect() {
   const travelDate = new URLSearchParams(useLocation().search).get("date");
   const [bus, setBus] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [activeTab, setActiveTab] = useState("WHY");
+
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -29,13 +31,24 @@ export default function SeatSelect() {
     );
   };
 
+  const seatClass = (seat, isBooked, isSelected) => {
+    if (isBooked) return "bg-gray-300 cursor-not-allowed";
+    if (isSelected) return "bg-green-500 text-white";
+    return seat.type === "SLEEPER"
+      ? "bg-blue-50 border-blue-400"
+      : "bg-white";
+  };
+
   const book = () => {
     navigate("/passenger-info", {
       state: { bus, selectedSeats, travelDate }
     });
   };
 
-  if (!bus) return null;
+  const totalAmount = selectedSeats.reduce((sum, seatNum) => {
+    const seat = bus.seatLayout.find(s => s.seatNumber === seatNum);
+    return sum + (seat?.price || 0);
+  }, 0);
 
   const lowerDeckSeats = bus.seatLayout.filter(
     seat => seat.deck === "LOWER"
