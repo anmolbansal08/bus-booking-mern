@@ -1,6 +1,7 @@
 const Bus = require("../models/Bus");
 const Booking = require("../models/Booking");
 
+const PAYMENT_EXPIRY_MINUTES=10;
 // Add bus (admin)
 exports.createBus = async (req, res) => {
   try {
@@ -49,8 +50,7 @@ const expiryTime = new Date(
 
 await Booking.updateMany(
   {
-    busId,
-    travelDate,
+    travelDate: date,
     status: "PAYMENT_PENDING",
     createdAt: { $lt: expiryTime }
   },
@@ -71,9 +71,9 @@ const bookings = await Booking.find({
     results.push({
       ...bus.toObject(),
       bookedSeats,
-      availableSeats: bus.seatLayout.filter(
-        seat => !bookedSeats.includes(seat)
-      )
+availableSeats: bus.seatLayout.filter(
+  seat => !bookedSeats.includes(seat.seatNumber)
+)
     });
   }
 
@@ -97,7 +97,7 @@ const expiryTime = new Date(
 await Booking.updateMany(
   {
     busId,
-    travelDate,
+    travelDate:date,
     status: "PAYMENT_PENDING",
     createdAt: { $lt: expiryTime }
   },
@@ -118,7 +118,6 @@ const bookings = await Booking.find({
     ...bus.toObject(),
     bookedSeats,
     availableSeats: bus.seatLayout.filter(
-      seat => !bookedSeats.includes(seat)
-    )
+seat => !bookedSeats.includes(seat.seatNumber)    )
   });
 };
