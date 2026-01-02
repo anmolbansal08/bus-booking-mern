@@ -4,9 +4,8 @@ import RatingBadge from "./RatingBadge";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function BusCard({bus}) {
-    const {
+const {
   name,
-  price,
   departureTime,
   arrivalTime,
   seatLayout = [],
@@ -16,10 +15,12 @@ export default function BusCard({bus}) {
 
 const seatsLeft = seatLayout.length - bookedSeats.length;
 const showWarning = seatsLeft <= 5;
-
+const startingPrice = seatLayout.length
+  ? Math.min(...seatLayout.map(s => s.price))
+  : 0;
 // price logic (temporary UI logic)
-const originalPrice = price + 200;
-const discount = originalPrice - price;
+const originalPrice = startingPrice + 2000;
+const discount = originalPrice - startingPrice;
     // convert HH:mm → minutes
     const toMinutes = (time) => {
         const [h, m] = time.split(":").map(Number);
@@ -61,9 +62,9 @@ const [params] = useSearchParams();
                 </div>
 
                 <div className="text-right">
-                    <p className="text-lg font-bold text-gray-900">
-                        ₹{price}
-                    </p>
+<p className="font-semibold">
+  ₹{startingPrice} onwards
+</p>
 
                     <div className="flex items-center gap-2 justify-end">
                         <p className="text-xs text-gray-400 line-through">
