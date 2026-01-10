@@ -11,17 +11,17 @@ export default function SeatSelect() {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [activeTab, setActiveTab] = useState("WHY");
 
-  const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) navigate("/login");
   }, []);
 
   useEffect(() => {
-    api
-      .get(`/buses/${busId}?date=${travelDate}`)
-      .then(res => setBus(res.data));
+    api.get(`/buses/${busId}?date=${travelDate}`).then(res => {
+      setBus(res.data);
+    });
   }, []);
 
   if (!bus) return null;
@@ -48,22 +48,6 @@ export default function SeatSelect() {
     );
   };
 
-  const seatClass = (seat, isBooked, isSelected) => {
-    if (isBooked) return "bg-gray-300 cursor-not-allowed";
-    if (isSelected) return "bg-green-500 text-white";
-    return seat.type === "SLEEPER"
-      ? "bg-blue-50 border-blue-400"
-      : "bg-white";
-  };
-
-  const chunkSeats = (seats, size = 3) => {
-    const rows = [];
-    for (let i = 0; i < seats.length; i += size) {
-      rows.push(seats.slice(i, i + size));
-    }
-    return rows;
-  };
-
   const totalAmount = selectedSeats.reduce((sum, seatNum) => {
     const seat = bus.seatLayout.find(s => s.seatNumber === seatNum);
     return sum + (seat?.price || 0);
@@ -75,52 +59,72 @@ export default function SeatSelect() {
     });
   };
 
+  const chunkSeats = (seats, size = 3) => {
+    const rows = [];
+    for (let i = 0; i < seats.length; i += size) {
+      rows.push(seats.slice(i, i + size));
+    }
+    return rows;
+  };
+
+  const renderSeat = seat => {
+    const isBooked = bus.bookedSeats.includes(seat.seatNumber);
+    const isSelected = selectedSeats.includes(seat.seatNumber);
+
+    return (
+      <div key={seat.seatNumber} className="relative group">
+        <button
+          disabled={isBooked}
+          onClick={() => toggleSeat(seat.seatNumber)}
+          className={`
+            relative border rounded-md font-semibold
+            flex items-center justify-center
+            ${seat.type === "SLEEPER" ? "w-20 h-10" : "w-10 h-10"}
+            ${isBooked ? "bg-gray-300 cursor-not-allowed" : ""}
+            ${isSelected ? "bg-green-500 text-white" : ""}
+            ${!isBooked && !isSelected && seat.type === "SLEEPER"
+              ? "bg-blue-50 border-blue-400"
+              : ""}
+            ${!isBooked && !isSelected && seat.type === "SEATER"
+              ? "bg-white"
+              : ""}
+            shadow-sm hover:shadow-md transition
+          `}
+        >
+          {seat.seatNumber}
+
+          {seat.femaleOnly && (
+            <span className="absolute top-1 left-1 w-2 h-2 bg-pink-500 rounded-full" />
+          )}
+        </button>
+
+        {/* Tooltip */}
+        <div className="absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:block bg-gray-900 text-white text-[11px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
+          {seat.femaleOnly
+            ? "Female only seat"
+            : `${seat.type} • ₹${seat.price}`}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="max-w-5xl mx-auto mt-6">
+    <div className="max-w-6xl mx-auto mt-6">
       <BookingTimeline currentStep={1} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* LEFT: SEAT LAYOUT */}
+        {/* LEFT: SEATS */}
         <div className="md:col-span-2 bg-white p-4 rounded shadow">
           <h3 className="text-xl font-semibold mb-4">{bus.name}</h3>
 
           {/* LOWER DECK */}
-          <h4 className="font-semibold mb-2">Lower Deck</h4>
-          <div className="space-y-3 mb-6">
-            {chunkSeats(lowerDeckSeats).map((row, idx) => (
-              <div key={idx} className="grid grid-cols-3 gap-4">
-                {row.map(seat => {
-                  const isBooked = bus.bookedSeats.includes(seat.seatNumber);
-                  const isSelected = selectedSeats.includes(seat.seatNumber);
-
-                  return (
-                    <div key={seat.seatNumber} className="relative group">
-                      <button
-                        disabled={isBooked}
-                        onClick={() => toggleSeat(seat.seatNumber)}
-                        className={`border rounded font-semibold w-full
-                          ${seat.type === "SLEEPER" ? "p-4" : "p-2"}
-                          ${seatClass(seat, isBooked, isSelected)}
-                        `}
-                      >
-                        {seat.seatNumber}
-                      </button>
-
-                      {!isBooked && (
-                        <div className="
-                          absolute z-10
-                          -top-10 left-1/2 -translate-x-1/2
-                          hidden group-hover:block
-                          bg-black text-white text-xs
-                          px-2 py-1 rounded
-                          whitespace-nowrap
-                        ">
-                          {seat.type} • ₹{seat.price}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+          <h4 className="font-semibold mb-3 flex items-center gap-2 text-gray-700">
+            ⬇ Lower Deck
+          </h4>
+          <div className="bg-gray-50 rounded-lg p-3 space-y-3 mb-6">
+            {chunkSeats(lowerDeckSeats).map((row, i) => (
+              <div key={i} className="flex gap-6">
+                {row.map(renderSeat)}
               </div>
             ))}
           </div>
@@ -128,42 +132,13 @@ export default function SeatSelect() {
           {/* UPPER DECK */}
           {upperDeckSeats.length > 0 && (
             <>
-              <h4 className="font-semibold mb-2">Upper Deck</h4>
-              <div className="space-y-3">
-                {chunkSeats(upperDeckSeats).map((row, idx) => (
-                  <div key={idx} className="grid grid-cols-3 gap-4">
-                    {row.map(seat => {
-                      const isBooked = bus.bookedSeats.includes(seat.seatNumber);
-                      const isSelected = selectedSeats.includes(seat.seatNumber);
-
-                      return (
-                        <div key={seat.seatNumber} className="relative group">
-                          <button
-                            disabled={isBooked}
-                            onClick={() => toggleSeat(seat.seatNumber)}
-                            className={`border rounded font-semibold w-full
-                              ${seat.type === "SLEEPER" ? "p-4" : "p-2"}
-                              ${seatClass(seat, isBooked, isSelected)}
-                            `}
-                          >
-                            {seat.seatNumber}
-                          </button>
-
-                          {!isBooked && (
-                            <div className="
-                              absolute z-10
-                              -top-10 left-1/2 -translate-x-1/2
-                              hidden group-hover:block
-                              bg-black text-white text-xs
-                              px-2 py-1 rounded
-                              whitespace-nowrap
-                            ">
-                              {seat.type} • ₹{seat.price}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+              <h4 className="font-semibold mb-3 flex items-center gap-2 text-gray-700">
+                ⬆ Upper Deck
+              </h4>
+              <div className="bg-gray-50 rounded-lg p-3 space-y-3">
+                {chunkSeats(upperDeckSeats).map((row, i) => (
+                  <div key={i} className="flex gap-6">
+                    {row.map(renderSeat)}
                   </div>
                 ))}
               </div>
@@ -171,29 +146,29 @@ export default function SeatSelect() {
           )}
 
           {/* LEGEND */}
-          <div className="flex flex-wrap gap-4 mt-6 text-sm">
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border bg-white inline-block rounded" />
-              Available
+          <div className="flex gap-4 text-xs text-gray-600 mt-4 flex-wrap">
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 border rounded" /> Available
             </span>
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border bg-blue-50 border-blue-400 inline-block rounded" />
-              Sleeper
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-blue-100 border border-blue-400 rounded" /> Sleeper
             </span>
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 bg-green-500 inline-block rounded" />
-              Selected
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-green-500 rounded" /> Selected
             </span>
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 bg-gray-300 inline-block rounded" />
-              Booked
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-gray-300 rounded" /> Booked
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-pink-100 border border-pink-400 rounded" /> Female only
             </span>
           </div>
         </div>
 
         {/* RIGHT: INFO + SUMMARY */}
-        <div className="bg-white p-4 rounded shadow">
-          <div className="flex gap-4 border-b mb-4 text-sm">
+        <div className="bg-white p-4 rounded shadow sticky top-20">
+          {/* Tabs */}
+          <div className="flex gap-4 border-b mb-4 text-xs uppercase tracking-wide">
             {tabs.map(t => (
               <button
                 key={t.key}
@@ -201,7 +176,7 @@ export default function SeatSelect() {
                 className={`pb-2 ${
                   activeTab === t.key
                     ? "text-red-600 border-b-2 border-red-600 font-semibold"
-                    : "text-gray-600"
+                    : "text-gray-500"
                 }`}
               >
                 {t.label}
@@ -209,7 +184,8 @@ export default function SeatSelect() {
             ))}
           </div>
 
-          <div className="text-sm space-y-2">
+          {/* Tab Content */}
+          <div className="text-sm text-gray-700 space-y-2">
             {activeTab === "WHY" && (
               <ul className="list-disc pl-4">
                 {info.highlights?.map(h => (
@@ -237,7 +213,7 @@ export default function SeatSelect() {
               ))}
 
             {activeTab === "AMENITIES" && (
-              <p>{bus.amenities.join(", ")}</p>
+              <p>{bus.amenities?.join(", ")}</p>
             )}
 
             {activeTab === "POLICY" && (
@@ -249,14 +225,25 @@ export default function SeatSelect() {
             )}
           </div>
 
+          {/* SUMMARY */}
           <div className="mt-6 border-t pt-4">
-            <p>Seats: {selectedSeats.join(", ") || "None"}</p>
-            <p className="font-semibold mt-1">Total: ₹{totalAmount}</p>
+            <div className="flex flex-wrap gap-2">
+              {selectedSeats.map(s => (
+                <span
+                  key={s}
+                  className="px-2 py-1 text-xs bg-gray-100 rounded"
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+
+            <p className="text-lg font-bold mt-2">₹{totalAmount}</p>
 
             <button
               onClick={book}
               disabled={!selectedSeats.length}
-              className="w-full mt-4 bg-red-600 text-white py-2 rounded disabled:opacity-50"
+              className="w-full mt-4 bg-red-600 text-white py-2 rounded disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Confirm Booking
             </button>
