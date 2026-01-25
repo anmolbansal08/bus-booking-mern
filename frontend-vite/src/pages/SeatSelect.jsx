@@ -66,15 +66,17 @@ export default function SeatSelect() {
     }
     return rows;
   };
+const userGender = localStorage.getItem("gender"); // "MALE" | "FEMALE"
 
   const renderSeat = seat => {
     const isBooked = bus.bookedSeats.includes(seat.seatNumber);
     const isSelected = selectedSeats.includes(seat.seatNumber);
-
+const isFemaleRestricted =
+  seat.femaleOnly && userGender === "MALE";
     return (
       <div key={seat.seatNumber} className="relative group">
         <button
-          disabled={isBooked}
+          disabled={isBooked || isFemaleRestricted}          
           onClick={() => toggleSeat(seat.seatNumber)}
           className={`
             relative border rounded-md font-semibold
@@ -100,9 +102,9 @@ export default function SeatSelect() {
 
         {/* Tooltip */}
         <div className="absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:block bg-gray-900 text-white text-[11px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
-          {seat.femaleOnly
-            ? "Female only seat"
-            : `${seat.type} • ₹${seat.price}`}
+{seat.femaleOnly
+  ? "Female only seat"
+  : `${seat.type} • ₹${seat.price}`}
         </div>
       </div>
     );
