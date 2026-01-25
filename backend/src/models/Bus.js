@@ -19,14 +19,15 @@ const busSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-    seatLayout: [
-      {
-        seatNumber: { type: String, required: true },
-        deck: { type: String, enum: ["LOWER", "UPPER"], required: true },
-        type: { type: String, enum: ["SEATER", "SLEEPER"], required: true },
-        price: { type: Number, required: true }
-      }
-    ],
+seatLayout: [
+  {
+    seatNumber: { type: String, required: true },
+    deck: { type: String, enum: ["LOWER", "UPPER"], required: true },
+    type: { type: String, enum: ["SEATER", "SLEEPER"], required: true },
+    price: { type: Number, required: true },
+    femaleOnly: { type: Boolean, default: false } // 👈
+  }
+],
     amenities: {
       type: [String],
       default: [],
