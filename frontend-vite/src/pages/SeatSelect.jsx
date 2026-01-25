@@ -6,22 +6,39 @@ import BookingTimeline from "../components/BookingTimeline";
 export default function SeatSelect() {
   const { busId } = useParams();
   const travelDate = new URLSearchParams(useLocation().search).get("date");
+
   const [bus, setBus] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [activeTab, setActiveTab] = useState("WHY");
 
-  const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) navigate("/login");
   }, []);
 
   useEffect(() => {
-    api
-      .get(`/buses/${busId}?date=${travelDate}`)
-      .then(res => setBus(res.data));
+    api.get(`/buses/${busId}?date=${travelDate}`).then(res => {
+      setBus(res.data);
+    });
   }, []);
+
+  if (!bus) return null;
+
+  const info = bus.busInfo || {};
+
+  const tabs = [
+    { key: "WHY", label: "Why book" },
+    { key: "ROUTE", label: "Bus route" },
+    { key: "BOARD", label: "Boarding" },
+    { key: "DROP", label: "Dropping" },
+    { key: "AMENITIES", label: "Amenities" },
+    { key: "POLICY", label: "Policies" }
+  ];
+
+  const lowerDeckSeats = bus.seatLayout.filter(s => s.deck === "LOWER");
+  const upperDeckSeats = bus.seatLayout.filter(s => s.deck === "UPPER");
 
   const toggleSeat = seatNumber => {
     setSelectedSeats(prev =>
@@ -31,13 +48,10 @@ export default function SeatSelect() {
     );
   };
 
-  const seatClass = (seat, isBooked, isSelected) => {
-    if (isBooked) return "bg-gray-300 cursor-not-allowed";
-    if (isSelected) return "bg-green-500 text-white";
-    return seat.type === "SLEEPER"
-      ? "bg-blue-50 border-blue-400"
-      : "bg-white";
-  };
+  const totalAmount = selectedSeats.reduce((sum, seatNum) => {
+    const seat = bus.seatLayout.find(s => s.seatNumber === seatNum);
+    return sum + (seat?.price || 0);
+  }, 0);
 
   const book = () => {
     navigate("/passenger-info", {
@@ -45,107 +59,197 @@ export default function SeatSelect() {
     });
   };
 
-  const totalAmount = selectedSeats.reduce((sum, seatNum) => {
-    const seat = bus.seatLayout.find(s => s.seatNumber === seatNum);
-    return sum + (seat?.price || 0);
-  }, 0);
+  const chunkSeats = (seats, size = 3) => {
+    const rows = [];
+    for (let i = 0; i < seats.length; i += size) {
+      rows.push(seats.slice(i, i + size));
+    }
+    return rows;
+  };
+const userGender = localStorage.getItem("gender"); // "MALE" | "FEMALE"
 
-  const lowerDeckSeats = bus.seatLayout.filter(
-    seat => seat.deck === "LOWER"
-  );
+  const renderSeat = seat => {
+    const isBooked = bus.bookedSeats.includes(seat.seatNumber);
+    const isSelected = selectedSeats.includes(seat.seatNumber);
+const isFemaleRestricted =
+  seat.femaleOnly && userGender === "MALE";
+    return (
+      <div key={seat.seatNumber} className="relative group">
+        <button
+          disabled={isBooked || isFemaleRestricted}          
+          onClick={() => toggleSeat(seat.seatNumber)}
+          className={`
+            relative border rounded-md font-semibold
+            flex items-center justify-center
+            ${seat.type === "SLEEPER" ? "w-20 h-10" : "w-10 h-10"}
+            ${isBooked ? "bg-gray-300 cursor-not-allowed" : ""}
+            ${isSelected ? "bg-green-500 text-white" : ""}
+            ${!isBooked && !isSelected && seat.type === "SLEEPER"
+              ? "bg-blue-50 border-blue-400"
+              : ""}
+            ${!isBooked && !isSelected && seat.type === "SEATER"
+              ? "bg-white"
+              : ""}
+            shadow-sm hover:shadow-md transition
+          `}
+        >
+          {seat.seatNumber}
 
-  const upperDeckSeats = bus.seatLayout.filter(
-    seat => seat.deck === "UPPER"
-  );
+          {seat.femaleOnly && (
+            <span className="absolute top-1 left-1 w-2 h-2 bg-pink-500 rounded-full" />
+          )}
+        </button>
 
-  const seatClass = (seat, isBooked, isSelected) => {
-  if (isBooked) return "bg-gray-300 cursor-not-allowed";
-  if (isSelected) return "bg-green-500 text-white";
+        {/* Tooltip */}
+        <div className="absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:block bg-gray-900 text-white text-[11px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
+{seat.femaleOnly
+  ? "Female only seat"
+  : `${seat.type} • ₹${seat.price}`}
+        </div>
+      </div>
+    );
+  };
 
-  return seat.type === "SLEEPER"
-    ? "bg-blue-50 border-blue-400"
-    : "bg-white";
-};
   return (
-    <div className="max-w-5xl mx-auto mt-6">
+    <div className="max-w-6xl mx-auto mt-6">
       <BookingTimeline currentStep={1} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* SEAT LAYOUT */}
+        {/* LEFT: SEATS */}
         <div className="md:col-span-2 bg-white p-4 rounded shadow">
           <h3 className="text-xl font-semibold mb-4">{bus.name}</h3>
 
           {/* LOWER DECK */}
-          <h4 className="font-semibold mb-2">Lower Deck</h4>
-          <div className="grid grid-cols-4 gap-3 mb-6">
-            {lowerDeckSeats.map(seat => {
-              const isBooked = bus.bookedSeats.includes(seat.seatNumber);
-              const isSelected = selectedSeats.includes(seat.seatNumber);
-
-              return (
-                <button
-                  key={seat.seatNumber}
-                  disabled={isBooked}
-                  onClick={() => toggleSeat(seat.seatNumber)}
-className={`border rounded font-semibold
-  ${seat.type === "SLEEPER" ? "p-4" : "p-2"}
-  ${seatClass(seat, isBooked, isSelected)}
-`}
-                >
-                  {seat.seatNumber}
-                </button>
-              );
-            })}
+          <h4 className="font-semibold mb-3 flex items-center gap-2 text-gray-700">
+            ⬇ Lower Deck
+          </h4>
+          <div className="bg-gray-50 rounded-lg p-3 space-y-3 mb-6">
+            {chunkSeats(lowerDeckSeats).map((row, i) => (
+              <div key={i} className="flex gap-6">
+                {row.map(renderSeat)}
+              </div>
+            ))}
           </div>
 
           {/* UPPER DECK */}
           {upperDeckSeats.length > 0 && (
             <>
-              <h4 className="font-semibold mb-2">Upper Deck</h4>
-              <div className="grid grid-cols-4 gap-3">
-                {upperDeckSeats.map(seat => {
-                  const isBooked = bus.bookedSeats.includes(seat.seatNumber);
-                  const isSelected = selectedSeats.includes(seat.seatNumber);
-
-                  return (
-                    <button
-                      key={seat.seatNumber}
-                      disabled={isBooked}
-                      onClick={() => toggleSeat(seat.seatNumber)}
-className={`border rounded font-semibold
-  ${seat.type === "SLEEPER" ? "p-4" : "p-2"}
-  ${seatClass(seat, isBooked, isSelected)}
-`}
-                    >
-                      {seat.seatNumber}
-                    </button>
-                  );
-                })}
+              <h4 className="font-semibold mb-3 flex items-center gap-2 text-gray-700">
+                ⬆ Upper Deck
+              </h4>
+              <div className="bg-gray-50 rounded-lg p-3 space-y-3">
+                {chunkSeats(upperDeckSeats).map((row, i) => (
+                  <div key={i} className="flex gap-6">
+                    {row.map(renderSeat)}
+                  </div>
+                ))}
               </div>
             </>
           )}
+
+          {/* LEGEND */}
+          <div className="flex gap-4 text-xs text-gray-600 mt-4 flex-wrap">
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 border rounded" /> Available
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-blue-100 border border-blue-400 rounded" /> Sleeper
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-green-500 rounded" /> Selected
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-gray-300 rounded" /> Booked
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="w-3 h-3 bg-pink-100 border border-pink-400 rounded" /> Female only
+            </span>
+          </div>
         </div>
 
-        {/* SUMMARY */}
-        <div className="bg-white p-4 rounded shadow">
-          <p>Seats: {selectedSeats.join(", ") || "None"}</p>
-          <p className="text-xl font-bold mt-2">
-            Total: ₹
-            {selectedSeats.reduce((sum, seatNum) => {
-              const seat = bus.seatLayout.find(
-                s => s.seatNumber === seatNum
-              );
-              return sum + (seat?.price || 0);
-            }, 0)}
-          </p>
+        {/* RIGHT: INFO + SUMMARY */}
+        <div className="bg-white p-4 rounded shadow sticky top-20">
+          {/* Tabs */}
+          <div className="flex gap-4 border-b mb-4 text-xs uppercase tracking-wide">
+            {tabs.map(t => (
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key)}
+                className={`pb-2 ${
+                  activeTab === t.key
+                    ? "text-red-600 border-b-2 border-red-600 font-semibold"
+                    : "text-gray-500"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
-          <button
-            onClick={book}
-            className="w-full mt-4 bg-red-600 text-white py-2 rounded"
-            disabled={!selectedSeats.length}
-          >
-            Confirm Booking
-          </button>
+          {/* Tab Content */}
+          <div className="text-sm text-gray-700 space-y-2">
+            {activeTab === "WHY" && (
+              <ul className="list-disc pl-4">
+                {info.highlights?.map(h => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ul>
+            )}
+
+            {activeTab === "ROUTE" && (
+              <p>{info.routeStops?.join(" → ")}</p>
+            )}
+
+            {activeTab === "BOARD" &&
+              info.boardingPoints?.map((b, i) => (
+                <p key={i}>
+                  <strong>{b.time}</strong> — {b.name}
+                </p>
+              ))}
+
+            {activeTab === "DROP" &&
+              info.droppingPoints?.map((d, i) => (
+                <p key={i}>
+                  <strong>{d.time}</strong> — {d.name}
+                </p>
+              ))}
+
+            {activeTab === "AMENITIES" && (
+              <p>{bus.amenities?.join(", ")}</p>
+            )}
+
+            {activeTab === "POLICY" && (
+              <>
+                <p>{info.policies?.cancellation}</p>
+                <p>{info.policies?.luggage}</p>
+                <p>{info.policies?.pets}</p>
+              </>
+            )}
+          </div>
+
+          {/* SUMMARY */}
+          <div className="mt-6 border-t pt-4">
+            <div className="flex flex-wrap gap-2">
+              {selectedSeats.map(s => (
+                <span
+                  key={s}
+                  className="px-2 py-1 text-xs bg-gray-100 rounded"
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+
+            <p className="text-lg font-bold mt-2">₹{totalAmount}</p>
+
+            <button
+              onClick={book}
+              disabled={!selectedSeats.length}
+              className="w-full mt-4 bg-red-600 text-white py-2 rounded disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Confirm Booking
+            </button>
+          </div>
         </div>
       </div>
     </div>

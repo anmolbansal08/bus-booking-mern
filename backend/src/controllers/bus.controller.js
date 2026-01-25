@@ -58,7 +58,6 @@ await Booking.updateMany(
     $set: { status: "EXPIRED" }
   }
 );
-console.log("bused",buses)
   for (let bus of buses) {
 const bookings = await Booking.find({
       busId: bus._id,

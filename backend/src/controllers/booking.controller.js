@@ -19,8 +19,23 @@ exports.createBooking = async (req, res) => {
     }
 const bus = await Bus.findById(busId);
 
-if (!bus) {
-  return res.status(404).json({ message: "Bus not found" });
+const seatMap = new Map(
+  bus.seatLayout.map(s => [s.seatNumber, s])
+);
+
+// validate female-only seats
+for (const p of passengers) {
+  const seat = seatMap.get(p.seatNumber);
+
+  if (!seat) {
+    return res.status(400).json({ message: "Invalid seat selected" });
+  }
+
+  if (seat.femaleOnly && p.gender !== "Female") {
+    return res.status(400).json({
+      message: `Seat ${seat.seatNumber} is reserved for female passengers only`
+    });
+  }
 }
 if (!bus.availableDates.includes(travelDate)) {
   return res.status(400).json({
