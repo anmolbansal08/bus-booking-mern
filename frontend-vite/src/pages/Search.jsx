@@ -98,8 +98,8 @@ const saveRecentSearch = () => {
 };
   return (
     <>
-  <div className="bg-gray-50 py-12">
-    <div className="max-w-6xl mx-auto px-4 text-center mb-10">
+  <div className="bg-gray-50 py-6">
+    <div className="max-w-6xl mx-auto px-4 text-center mb-6">
       <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
         India’s No.1 Bus Ticket Booking Platform
       </h1>
@@ -111,7 +111,7 @@ const saveRecentSearch = () => {
 
     {/* EXISTING SEARCH CARD – UNCHANGED */}
     <div className="max-w-4xl mx-auto px-4">
-      <div className="bg-white rounded-2xl shadow p-6">
+      <div className="bg-white rounded-2xl shadow p-3">
         {/* 🔽 KEEP YOUR EXISTING SEARCH JSX HERE EXACTLY */}
               {/* MAIN SEARCH PILL */}
       <div className="bg-white rounded-2xl shadow-md px-4 py-3">
@@ -211,7 +211,7 @@ const saveRecentSearch = () => {
         </div>
       </div>
       {/* CTA */}
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-center mt-3">
         <button
           onClick={search}
           className="
@@ -229,12 +229,12 @@ const saveRecentSearch = () => {
       </div>
     </div>
 
-    <div className="mt-6 text-center text-sm text-gray-600">
+    <div className="mt-3 text-center text-sm text-gray-600">
       Free Cancellation • Instant Refunds*
     </div>
   </div>
   {/* TRUST STRIP */}
-<div className="bg-gray-50 border-t">
+<div className="bg-white border-t">
     <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-center gap-6 text-sm text-gray-700">
 <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">      <span className="text-green-600">✔</span>
       <span>Safe Payments</span>
@@ -276,7 +276,7 @@ const saveRecentSearch = () => {
 </div>
 {/* RECENTLY SEARCHED */}
 {recentSearches.length > 0 && (
-<div className="bg-gray-50 py-10">
+<div className="bg-gray-50 py-6">
       <div className="max-w-6xl mx-auto px-4">
       <h2 className="text-xl font-semibold text-gray-800 mb-6">
         Recently Searched
@@ -309,7 +309,7 @@ const saveRecentSearch = () => {
   </div>
 )}
 {/* POPULAR ROUTES */}
-<div className="bg-white py-12 mt-4">  <div className="max-w-6xl mx-auto px-4">
+<div className="bg-white py-8 mt-0">  <div className="max-w-6xl mx-auto px-4">
     <h2 className="text-xl font-semibold text-gray-800 mb-6">
       Popular Routes
     </h2>
