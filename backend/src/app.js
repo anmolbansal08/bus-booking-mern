@@ -6,6 +6,7 @@ const busRoutes = require("./routes/bus.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const authRoutes = require("./routes/auth.routes");
 const paymentRoutes= require("./routes/payments")
+const adminRoutes = require("./routes/admin.routes");
 const app = express();
 
 app.use(cors());
@@ -17,7 +18,8 @@ app.use("/api/buses", busRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/payments", paymentRoutes);
-
+// ✅ Admin-lite routes
+app.use("/api/admin", adminRoutes);
 app.get("/", (req, res) => {
   res.send("Bus Booking API is running");
 });

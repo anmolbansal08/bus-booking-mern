@@ -10,6 +10,13 @@ import PassengerInfo from "./pages/PassengerInfo";
 import BookingSuccess from "./pages/BookingSuccess";
 import Payment from "./pages/Payment";
 import Home from "./components/Home";
+import AdminHome from "./components/admin/AdminHome";
+import CreateRoute from "./components/admin/CreateRoute";
+import AdminRoutes from "./components/admin/AdminRoutes";
+import AdminCreateBus from "./components/admin/AdminCreateBus";
+import AdminBusList from "./components/admin/AdminBusList";
+import AdminBookings from "./components/admin/AdminBooking";
+
 export default function App() {
   return (
         <div className="min-h-screen bg-gray-50">
@@ -25,6 +32,12 @@ export default function App() {
         <Route path="/passenger-info" element={<PassengerInfo />} />
         <Route path="/booking-success" element={<BookingSuccess />} />
         <Route path="/payment" element={<Payment />} />
+        <Route path="/admin" element={<AdminHome />} />
+<Route path="/admin/create-route" element={<CreateRoute />} />
+<Route path="/admin/routes" element={<AdminRoutes />} />
+<Route path="/admin/buses/create" element={<AdminCreateBus />} />
+<Route path="/admin/buses" element={<AdminBusList />} />
+<Route path="/admin/bookings" element={<AdminBookings />} />
       </Routes>
     </BrowserRouter>
     </div>
