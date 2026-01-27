@@ -120,3 +120,14 @@ const bookings = await Booking.find({
 seat => !bookedSeats.includes(seat.seatNumber)    )
   });
 };
+// controllers/bus.controller.js
+exports.getAllBusesAdmin = async (req, res) => {
+  try {
+    const buses = await Bus.find()
+      .populate("routeId", "source destination");
+
+    res.json(buses);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
