@@ -69,11 +69,12 @@ const booking = await Booking.create({
   passengers,
   contact,
   totalAmount,
-  status: "PAYMENT_PENDING",
-  payment: {
-    status: "PENDING",
-    method: "MOCK"
-  }
+status: "PAYMENT_PENDING",
+payment: {
+  status: "INITIATED",
+  attempts: 1,
+  lastAttemptAt: new Date()
+}
 });
 
     res.status(201).json(booking);
@@ -133,4 +134,46 @@ exports.cancelBooking = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+exports.markPaymentFailed = async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+
+  if (!booking)
+    return res.status(404).json({ message: "Booking not found" });
+
+  if (booking.status !== "PAYMENT_PENDING") {
+    return res.status(400).json({
+      message: "Payment retry not allowed"
+    });
+  }
+
+  booking.payment.status = "FAILED";
+  booking.payment.attempts += 1;
+  booking.payment.lastAttemptAt = new Date();
+  booking.status = "PAYMENT_FAILED";
+
+  await booking.save();
+
+  res.json(booking);
+};
+exports.retryPayment = async (req, res) => {
+  const booking = await Booking.findById(req.params.id);
+
+  if (!booking)
+    return res.status(404).json({ message: "Booking not found" });
+
+  if (booking.status !== "PAYMENT_FAILED") {
+    return res.status(400).json({
+      message: "Retry not allowed"
+    });
+  }
+
+  booking.payment.status = "INITIATED";
+  booking.payment.attempts += 1;
+  booking.payment.lastAttemptAt = new Date();
+  booking.status = "PAYMENT_PENDING";
+
+  await booking.save();
+
+  res.json(booking);
 };

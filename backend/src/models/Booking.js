@@ -30,20 +30,34 @@ const bookingSchema = new mongoose.Schema(
     totalAmount: Number,
 status: {
   type: String,
-  enum: ["PAYMENT_PENDING", "CONFIRMED", "CANCELLED"],
-  default: "PAYMENT_PENDING"
+enum: [
+  "PAYMENT_PENDING",
+  "PAYMENT_FAILED",
+  "CONFIRMED",
+  "CANCELLED",
+  "EXPIRED"
+],  default: "PAYMENT_PENDING"
 },
-    payment: {
-      status: {
-        type: String,
-        enum: ["PENDING", "SUCCESS", "FAILED"],
-        default: "PENDING"
-      },
-      method: {
-        type: String,
-        default: "MOCK"
-      }
-    }
+// models/Booking.js
+payment: {
+  status: {
+    type: String,
+    enum: ["PENDING", "SUCCESS", "FAILED"],
+    default: "PENDING"
+  },
+  method: {
+    type: String,
+    default: "MOCK"
+  },
+  attempts: {
+    type: Number,
+    default: 1
+  },
+  lastAttemptAt: {
+    type: Date,
+    default: Date.now
+  }
+}
   },
   { timestamps: true }
 );
