@@ -1,0 +1,4 @@
+module.exports = {
+  PAYMENT_EXPIRY_MINUTES: 5,
+  MAX_RETRY_ATTEMPTS: 3
+};

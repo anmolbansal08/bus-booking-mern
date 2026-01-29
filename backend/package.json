@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
     "dev": "RUNTIME=local nodemon src/server.js",
-  "docker": "RUNTIME=docker node src/server.js"
+    "docker": "RUNTIME=docker node src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -21,6 +21,7 @@
     "google-auth-library": "^10.5.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.2",
+    "node-cron": "^4.2.1",
     "razorpay": "^2.9.6"
   }
 }
