@@ -45,23 +45,36 @@ const payNow = async () => {
       name: "Bus Booking",
       order_id: orderRes.data.id,
       handler: async function (response) {
-        await api.post("/payments/razorpay/verify", {
-          razorpay_order_id: response.razorpay_order_id,
-          razorpay_payment_id: response.razorpay_payment_id,
-          razorpay_signature: response.razorpay_signature,
-          bookingId: booking._id
-        });
+        try {
+          await api.post("/payments/razorpay/verify", {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            bookingId: booking._id
+          });
 
-        navigate("/booking-success", {
-          state: { booking }
-        });
+          navigate("/booking-success", {
+            state: { booking }
+          });
+        } catch (err) {
+          // ❌ verification failed
+          navigate(`/payment-failed/${booking._id}`);
+        }
+      },
+
+      modal: {
+        ondismiss: function () {
+          // ❌ user closed Razorpay popup
+          navigate(`/payment-failed/${booking._id}`);
+        }
       }
     };
 
     const rzp = new window.Razorpay(options);
     rzp.open();
   } catch (err) {
-    alert("Payment failed");
+    // ❌ order creation failed
+    navigate(`/payment-failed/${booking._id}`);
   }
 };
 
