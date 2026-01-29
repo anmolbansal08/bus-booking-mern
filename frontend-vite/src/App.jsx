@@ -16,6 +16,7 @@ import AdminRoutes from "./components/admin/AdminRoutes";
 import AdminCreateBus from "./components/admin/AdminCreateBus";
 import AdminBusList from "./components/admin/AdminBusList";
 import AdminBookings from "./components/admin/AdminBooking";
+import PaymentFailed from "./pages/PaymentFailed";
 
 export default function App() {
   return (
@@ -38,6 +39,10 @@ export default function App() {
 <Route path="/admin/buses/create" element={<AdminCreateBus />} />
 <Route path="/admin/buses" element={<AdminBusList />} />
 <Route path="/admin/bookings" element={<AdminBookings />} />
+<Route
+  path="/payment-failed/:bookingId"
+  element={<PaymentFailed />}
+/>
       </Routes>
     </BrowserRouter>
     </div>

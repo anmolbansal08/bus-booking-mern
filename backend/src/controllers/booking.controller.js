@@ -71,7 +71,7 @@ const booking = await Booking.create({
   totalAmount,
 status: "PAYMENT_PENDING",
 payment: {
-  status: "INITIATED",
+  status: "PENDING",
   attempts: 1,
   lastAttemptAt: new Date()
 }
@@ -135,45 +135,49 @@ exports.cancelBooking = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-exports.markPaymentFailed = async (req, res) => {
-  const booking = await Booking.findById(req.params.id);
 
-  if (!booking)
-    return res.status(404).json({ message: "Booking not found" });
+const MAX_RETRY_ATTEMPTS = 3;
 
-  if (booking.status !== "PAYMENT_PENDING") {
-    return res.status(400).json({
-      message: "Payment retry not allowed"
-    });
-  }
-
-  booking.payment.status = "FAILED";
-  booking.payment.attempts += 1;
-  booking.payment.lastAttemptAt = new Date();
-  booking.status = "PAYMENT_FAILED";
-
-  await booking.save();
-
-  res.json(booking);
-};
 exports.retryPayment = async (req, res) => {
-  const booking = await Booking.findById(req.params.id);
+  const { bookingId } = req.body;
 
-  if (!booking)
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
     return res.status(404).json({ message: "Booking not found" });
+  }
 
-  if (booking.status !== "PAYMENT_FAILED") {
+  // ❌ expired / cancelled safety
+  if (booking.status === "CANCELLED") {
+    return res.status(400).json({ message: "Booking cancelled" });
+  }
+
+  // ❌ retry limit
+  if (booking.payment.attempts >= MAX_RETRY_ATTEMPTS) {
     return res.status(400).json({
-      message: "Retry not allowed"
+      message: "Retry limit exceeded"
     });
   }
 
-  booking.payment.status = "INITIATED";
-  booking.payment.attempts += 1;
-  booking.payment.lastAttemptAt = new Date();
+  // ❌ expiry check (reuse your existing logic)
+  const expiryTime = new Date(
+    Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
+  );
+
+  if (booking.createdAt < expiryTime) {
+    booking.status = "CANCELLED";
+    await booking.save();
+    return res.status(400).json({ message: "Booking expired" });
+  }
+
+  // ✅ allow retry
   booking.status = "PAYMENT_PENDING";
+  booking.payment.status = "PENDING";
 
   await booking.save();
 
-  res.json(booking);
+  res.json({
+    message: "Retry allowed",
+    bookingId: booking._id,
+    attemptsLeft: MAX_RETRY_ATTEMPTS - booking.payment.attempts
+  });
 };
