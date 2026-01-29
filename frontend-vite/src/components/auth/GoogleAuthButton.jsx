@@ -15,6 +15,7 @@ export default function GoogleAuthButton({ onSuccess }) {
           });
 
           localStorage.setItem("token", res.data.token);
+          localStorage.setItem("user", JSON.stringify(res.data.user));
           onSuccess();
         } catch (err) {
           console.error("Google login failed", err);
