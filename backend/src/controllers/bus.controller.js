@@ -1,7 +1,6 @@
 const Bus = require("../models/Bus");
 const Booking = require("../models/Booking");
 
-const PAYMENT_EXPIRY_MINUTES=10;
 // Add bus (admin)
 exports.createBus = async (req, res) => {
   try {
@@ -44,20 +43,6 @@ exports.getBusesByRoute = async (req, res) => {
   const buses = await Bus.find({ routeId,availableDates:date });
 
   const results = [];
-const expiryTime = new Date(
-  Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
-);
-
-await Booking.updateMany(
-  {
-    travelDate: date,
-    status: "PAYMENT_PENDING",
-    createdAt: { $lt: expiryTime }
-  },
-  {
-    $set: { status: "EXPIRED" }
-  }
-);
   for (let bus of buses) {
 const bookings = await Booking.find({
       busId: bus._id,
@@ -89,21 +74,6 @@ exports.getBusByIdWithAvailability = async (req, res) => {
   if (!bus) {
     return res.status(404).json({ message: "Bus not found" });
   }
-const expiryTime = new Date(
-  Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
-);
-
-await Booking.updateMany(
-  {
-    busId,
-    travelDate:date,
-    status: "PAYMENT_PENDING",
-    createdAt: { $lt: expiryTime }
-  },
-  {
-    $set: { status: "EXPIRED" }
-  }
-);
 
 const bookings = await Booking.find({
   busId,

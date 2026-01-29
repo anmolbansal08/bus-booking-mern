@@ -1,6 +1,6 @@
 const Booking = require("../models/Booking");
 const Bus = require("../models/Bus");
-
+const { PAYMENT_EXPIRY_MINUTES } =require("../config/payment")
 // Create booking
 exports.createBooking = async (req, res) => {
   try {
