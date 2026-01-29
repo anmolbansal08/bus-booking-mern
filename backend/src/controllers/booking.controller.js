@@ -1,6 +1,6 @@
 const Booking = require("../models/Booking");
 const Bus = require("../models/Bus");
-
+const { PAYMENT_EXPIRY_MINUTES } =require("../config/payment")
 // Create booking
 exports.createBooking = async (req, res) => {
   try {
@@ -69,11 +69,12 @@ const booking = await Booking.create({
   passengers,
   contact,
   totalAmount,
-  status: "PAYMENT_PENDING",
-  payment: {
-    status: "PENDING",
-    method: "MOCK"
-  }
+status: "PAYMENT_PENDING",
+payment: {
+  status: "PENDING",
+  attempts: 1,
+  lastAttemptAt: new Date()
+}
 });
 
     res.status(201).json(booking);
@@ -133,4 +134,50 @@ exports.cancelBooking = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+
+const MAX_RETRY_ATTEMPTS = 3;
+
+exports.retryPayment = async (req, res) => {
+  const { bookingId } = req.body;
+
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    return res.status(404).json({ message: "Booking not found" });
+  }
+
+  // ❌ expired / cancelled safety
+  if (booking.status === "CANCELLED") {
+    return res.status(400).json({ message: "Booking cancelled" });
+  }
+
+  // ❌ retry limit
+  if (booking.payment.attempts >= MAX_RETRY_ATTEMPTS) {
+    return res.status(400).json({
+      message: "Retry limit exceeded"
+    });
+  }
+
+  // ❌ expiry check (reuse your existing logic)
+  const expiryTime = new Date(
+    Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
+  );
+
+  if (booking.createdAt < expiryTime) {
+    booking.status = "CANCELLED";
+    await booking.save();
+    return res.status(400).json({ message: "Booking expired" });
+  }
+
+  // ✅ allow retry
+  booking.status = "PAYMENT_PENDING";
+  booking.payment.status = "PENDING";
+
+  await booking.save();
+
+  res.json({
+    message: "Retry allowed",
+    bookingId: booking._id,
+    attemptsLeft: MAX_RETRY_ATTEMPTS - booking.payment.attempts
+  });
 };
