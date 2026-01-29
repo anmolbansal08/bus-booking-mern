@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const startBookingExpiryJob = require("../jobs/bookingExpiry.job");
 
 const connectDB = async () => {
   try {
@@ -9,6 +10,7 @@ const mongoUri =
 
 await mongoose.connect(mongoUri);    
 console.log("✅ MongoDB connected");
+startBookingExpiryJob();
   } catch (error) {
   console.error("❌ MongoDB connection failed");
   console.error(error.message);
