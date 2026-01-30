@@ -9,7 +9,3 @@ connectDB();
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
-db.users.updateOne(
- { email: "anmbansa@gmail.com" },
- { $set: { role: "ADMIN" } } )
