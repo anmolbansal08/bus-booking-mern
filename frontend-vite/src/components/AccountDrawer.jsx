@@ -9,7 +9,11 @@ export default function AccountDrawer({
   onSignupClick,
 }) {
   const token = localStorage.getItem("token");
-
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  window.location.href = "/"; // hard reset (simplest & safest)
+};
   return (
     <>
       {/* Backdrop */}
@@ -79,11 +83,7 @@ export default function AccountDrawer({
               </p>
 
               <button
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  onClose();
-                  window.location.reload();
-                }}
+onClick={handleLogout}
                 className="mt-5 w-full border border-red-600
                 text-red-600 hover:bg-red-50 transition
                 py-3 rounded-full font-semibold"
