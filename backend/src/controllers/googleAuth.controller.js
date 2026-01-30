@@ -19,11 +19,21 @@ exports.googleLogin = async (req, res) => {
     user = await User.create({ email, name });
   }
 
-  const jwtToken = jwt.sign(
-    { userId: user._id },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
+const jwtToken = jwt.sign(
+  { userId: user._id,
+    role: user.role
+  },
+  process.env.JWT_SECRET,
+  { expiresIn: "7d" }
+);
 
-  res.json({ token: jwtToken });
+  res.json({
+  token,
+  user: {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  }
+});
 };

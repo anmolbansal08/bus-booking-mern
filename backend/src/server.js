@@ -1,8 +1,3 @@
-// require("./models/User");
-// require("./models/Route");
-// require("./models/Bus");
-// require("./models/Booking");
-
 require("dotenv").config();
 const app = require("./app");
 const connectDB = require("./config/db");

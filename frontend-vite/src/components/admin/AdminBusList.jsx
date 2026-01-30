@@ -5,7 +5,7 @@ export default function AdminBusList() {
   const [buses, setBuses] = useState([]);
 
   useEffect(() => {
-    api.get("/buses/admin").then(res => {
+    api.get("/admin/buses").then(res => {
       setBuses(res.data);
     });
   }, []);

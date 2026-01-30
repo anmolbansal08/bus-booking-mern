@@ -1,50 +1,57 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Search from "./pages/Search";
+import Navbar from "./components/Navbar";
+
+import Home from "./components/Home";
+import BusListPage from "./pages/BusListPage";
 import SeatSelect from "./pages/SeatSelect";
+import PassengerInfo from "./pages/PassengerInfo";
+import Payment from "./pages/Payment";
+import BookingSuccess from "./pages/BookingSuccess";
+import PaymentFailed from "./pages/PaymentFailed";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyBookings from "./pages/MyBookings";
-import Navbar from "./components/Navbar";
-import BusListPage from "./pages/BusListPage";
-import PassengerInfo from "./pages/PassengerInfo";
-import BookingSuccess from "./pages/BookingSuccess";
-import Payment from "./pages/Payment";
-import Home from "./components/Home";
+
+import AdminLayout from "./components/admin/AdminLayout";
 import AdminHome from "./components/admin/AdminHome";
-import CreateRoute from "./components/admin/CreateRoute";
 import AdminRoutes from "./components/admin/AdminRoutes";
-import AdminCreateBus from "./components/admin/AdminCreateBus";
+import CreateRoute from "./components/admin/CreateRoute";
 import AdminBusList from "./components/admin/AdminBusList";
+import AdminCreateBus from "./components/admin/AdminCreateBus";
 import AdminBookings from "./components/admin/AdminBooking";
-import PaymentFailed from "./pages/PaymentFailed";
 
 export default function App() {
   return (
-        <div className="min-h-screen bg-gray-50">
-    <BrowserRouter>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/buses" element={<BusListPage />} />
-        <Route path="/seats/:busId" element={<SeatSelect />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/my-bookings" element={<MyBookings />} />
-        <Route path="/passenger-info" element={<PassengerInfo />} />
-        <Route path="/booking-success" element={<BookingSuccess />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/admin" element={<AdminHome />} />
-<Route path="/admin/create-route" element={<CreateRoute />} />
-<Route path="/admin/routes" element={<AdminRoutes />} />
-<Route path="/admin/buses/create" element={<AdminCreateBus />} />
-<Route path="/admin/buses" element={<AdminBusList />} />
-<Route path="/admin/bookings" element={<AdminBookings />} />
-<Route
-  path="/payment-failed/:bookingId"
-  element={<PaymentFailed />}
-/>
-      </Routes>
-    </BrowserRouter>
+    <div className="min-h-screen bg-gray-50">
+      <BrowserRouter>
+        <Navbar />
+
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Home />} />
+          <Route path="/buses" element={<BusListPage />} />
+          <Route path="/seats/:busId" element={<SeatSelect />} />
+          <Route path="/passenger-info" element={<PassengerInfo />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/booking-success" element={<BookingSuccess />} />
+          <Route path="/payment-failed/:bookingId" element={<PaymentFailed />} />
+
+          {/* Auth */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/my-bookings" element={<MyBookings />} />
+
+          {/* Admin (CLEAN) */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminHome />} />
+            <Route path="routes" element={<AdminRoutes />} />
+            <Route path="create-route" element={<CreateRoute />} />
+            <Route path="buses" element={<AdminBusList />} />
+            <Route path="buses/create" element={<AdminCreateBus />} />
+            <Route path="bookings" element={<AdminBookings />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </div>
   );
 }
