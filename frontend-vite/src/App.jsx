@@ -36,8 +36,19 @@ export default function App() {
         <Route path="/payment" element={<Payment />} />
         <Route path="/admin" element={<AdminHome />} />
 <Route path="/admin/create-route" element={<CreateRoute />} />
-<Route path="/admin/routes" element={
-<AdminRoute>
+<Route
+  path="/admin"
+  element={
+    <AdminRoute>
+      <AdminHome />
+    </AdminRoute>
+  }
+/>
+
+<Route
+  path="/admin/routes"
+  element={
+    <AdminRoute>
       <AdminRoutes />
     </AdminRoute>
   }
