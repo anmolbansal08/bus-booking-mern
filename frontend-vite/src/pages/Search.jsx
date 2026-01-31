@@ -90,7 +90,7 @@ if (!res.data.length) {
     localStorage.setItem("recentSearches", JSON.stringify(updated));
   };
 
-  const onRecentSearch = () => {
+  const onRecentSearch = (s) => {
     setSource(s.source);
     setDestination(s.destination);
     setDate(s.date);
@@ -273,7 +273,7 @@ if (!res.data.length) {
         {recentSearches.map((s, idx) => (
           <button
             key={idx}
-            onClick={onRecentSearch}
+            onClick={() => onRecentSearch(s)}
             className="border rounded-xl px-4 py-3 text-left hover:shadow-sm transition"
           >
             <p className="font-semibold text-gray-800">
