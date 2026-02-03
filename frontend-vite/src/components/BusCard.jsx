@@ -4,6 +4,7 @@ import RatingBadge from "./RatingBadge";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function BusCard({bus}) {
+    console.log("bus",bus);
 const {
   name,
   departureTime,
@@ -12,7 +13,8 @@ const {
   bookedSeats = [],
   amenities = [],
 } = bus;
-
+const source = bus.routeId?.source;
+const destination = bus.routeId?.destination;
 const seatsLeft = seatLayout.length - bookedSeats.length;
 const showWarning = seatsLeft <= 5;
 const startingPrice = seatLayout.length
@@ -82,7 +84,7 @@ const [params] = useSearchParams();
             <div className="mt-3 flex items-center justify-between">
                 <div>
                     <p className="text-sm font-medium">{departureTime}</p>
-                    <p className="text-xs text-gray-500">Delhi</p>
+                    <p className="text-xs text-gray-500">{source}</p>
                 </div>
 
                 <div className="text-center text-xs text-gray-500">
@@ -102,7 +104,7 @@ const [params] = useSearchParams();
                         )}
                     </div>
 
-                    <p className="text-xs text-gray-500">Jaipur</p>
+                    <p className="text-xs text-gray-500">{destination}</p>
                 </div>
             </div>
 

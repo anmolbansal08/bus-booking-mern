@@ -2,10 +2,13 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import BookingTimeline from "../components/BookingTimeline";
+import BusInfoTabsContent from "../components/BusInfoTabsContent";
 
 export default function SeatSelect() {
   const { busId } = useParams();
-  const travelDate = new URLSearchParams(useLocation().search).get("date");
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const travelDate = searchParams.get("date");
 
   const [bus, setBus] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
@@ -187,45 +190,7 @@ const isFemaleRestricted =
           </div>
 
           {/* Tab Content */}
-          <div className="text-sm text-gray-700 space-y-2">
-            {activeTab === "WHY" && (
-              <ul className="list-disc pl-4">
-                {info.highlights?.map(h => (
-                  <li key={h}>{h}</li>
-                ))}
-              </ul>
-            )}
-
-            {activeTab === "ROUTE" && (
-              <p>{info.routeStops?.join(" → ")}</p>
-            )}
-
-            {activeTab === "BOARD" &&
-              info.boardingPoints?.map((b, i) => (
-                <p key={i}>
-                  <strong>{b.time}</strong> — {b.name}
-                </p>
-              ))}
-
-            {activeTab === "DROP" &&
-              info.droppingPoints?.map((d, i) => (
-                <p key={i}>
-                  <strong>{d.time}</strong> — {d.name}
-                </p>
-              ))}
-
-            {activeTab === "AMENITIES" && (
-              <p>{bus.amenities?.join(", ")}</p>
-            )}
-
-            {activeTab === "POLICY" && (
-              <>
-                <p>{info.policies?.cancellation}</p>
-                <p>{info.policies?.luggage}</p>
-                <p>{info.policies?.pets}</p>
-              </>
-            )}
-          </div>
+<BusInfoTabsContent activeTab={activeTab} info={info} amenities={bus.amenities} />
 
           {/* SUMMARY */}
           <div className="mt-6 border-t pt-4">
