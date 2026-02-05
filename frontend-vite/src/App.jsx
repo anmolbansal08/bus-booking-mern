@@ -21,6 +21,7 @@ import AdminCreateBus from "./components/admin/AdminCreateBus";
 import AdminBookings from "./components/admin/AdminBooking";
 
 export default function App() {
+  console.log("API BASE URL:", import.meta.env.VITE_API_BASE_URL);
   return (
     <div className="min-h-screen bg-gray-50">
       <BrowserRouter>
