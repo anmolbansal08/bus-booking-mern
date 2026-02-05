@@ -3,10 +3,7 @@ const startBookingExpiryJob = require("../jobs/bookingExpiry.job");
 
 const connectDB = async () => {
   try {
-const mongoUri =
-  process.env.RUNTIME === "docker"
-    ? process.env.MONGO_URI_DOCKER
-    : process.env.MONGO_URI_LOCAL;
+const mongoUri = process.env.MONGO_URI;
 
 await mongoose.connect(mongoUri);    
 console.log("✅ MongoDB connected");
