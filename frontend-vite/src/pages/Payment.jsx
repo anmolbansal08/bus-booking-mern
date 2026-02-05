@@ -15,22 +15,6 @@ export default function Payment() {
   }
 
   const { booking, bus, travelDate, seats } = state;
-
-//   const payNow = async () => {
-//     try {
-//       await api.post("/payments/mock-success", {
-//         bookingId: booking._id
-//       });
-
-// navigate("/booking-success", {
-//   state: { booking }
-// });
-//     } catch (err) {
-//       alert(
-//         err.response?.data?.message || "Payment failed"
-//       );
-//     }
-//   };
 const payNow = async () => {
   try {
     const orderRes = await api.post(

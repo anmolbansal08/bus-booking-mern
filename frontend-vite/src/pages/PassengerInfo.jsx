@@ -72,7 +72,6 @@ export default function PassengerInfo() {
         contact,
         totalAmount: totalAmount
       });
-      console.log(selectedSeats.length,totalAmount);
       // ✅ store email BEFORE navigation
       localStorage.setItem("bookingEmail", contact.email);
 
