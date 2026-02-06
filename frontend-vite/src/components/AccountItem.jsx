@@ -1,9 +1,16 @@
-// AccountItem.jsx
-export default function AccountItem({ label }) {
+export default function AccountItem({ label, onClick }) {
   return (
-    <div className="flex items-center justify-between px-4 py-3 border-t hover:bg-gray-50 cursor-pointer">
-      <span className="text-gray-800">{label}</span>
+    <button
+      type="button"
+      onClick={onClick}
+      className="
+        w-full text-left px-5 py-3
+        hover:bg-gray-50 transition
+        flex items-center justify-between
+      "
+    >
+      <span>{label}</span>
       <span className="text-gray-400">›</span>
-    </div>
+    </button>
   );
 }

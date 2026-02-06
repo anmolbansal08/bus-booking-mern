@@ -4,7 +4,9 @@ const { createBooking,getMyBookings,cancelBooking, lookupBooking } = require("..
 const auth = require("../middleware/auth");
 
 
-router.post("/", auth, createBooking);
+router.post("/", createBooking);
 router.get("/my", auth, getMyBookings);
-router.patch("/:bookingId/cancel", cancelBooking);module.exports = router;
+router.patch("/:bookingId/cancel", cancelBooking);
 router.post("/lookup",lookupBooking);
+
+module.exports = router;

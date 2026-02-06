@@ -11,7 +11,6 @@ import PaymentFailed from "./pages/PaymentFailed";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import MyBookings from "./pages/MyBookings";
-
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminHome from "./components/admin/AdminHome";
 import AdminRoutes from "./components/admin/AdminRoutes";
@@ -19,6 +18,7 @@ import CreateRoute from "./components/admin/CreateRoute";
 import AdminBusList from "./components/admin/AdminBusList";
 import AdminCreateBus from "./components/admin/AdminCreateBus";
 import AdminBookings from "./components/admin/AdminBooking";
+import ManageTicket from "./components/ManageTicket";
 
 export default function App() {
   console.log("API BASE URL:", import.meta.env.VITE_API_BASE_URL);
@@ -41,7 +41,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/my-bookings" element={<MyBookings />} />
-
+<Route path="/manage-ticket" element={<ManageTicket />} />
           {/* Admin (CLEAN) */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminHome />} />

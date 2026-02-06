@@ -193,9 +193,14 @@ exports.lookupBooking = async (req, res) => {
   const booking = await Booking.findOne({
     ticketNumber,
     "contact.phone": phone
-  })
-    .populate("busId", "name departureTime arrivalTime")
-    .populate("routeId", "source destination");
+  }).populate({
+    path: "busId",
+    select: "name departureTime arrivalTime routeId",
+    populate: {
+      path: "routeId",
+      select: "source destination"
+    }
+  });
 
   if (!booking) {
     return res.status(404).json({
