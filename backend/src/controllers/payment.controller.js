@@ -1,10 +1,12 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Booking = require("../models/Booking");
+const generateTicketNumber = require("../utils/generateTicketNumber");
 const {
   PAYMENT_EXPIRY_MINUTES,
   MAX_RETRY_ATTEMPTS
 } = require("../config/payment");
+
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET
@@ -61,11 +63,18 @@ if (booking.status !== "PAYMENT_PENDING") {
 }
 
 booking.status = "CONFIRMED";
+
 booking.payment = {
   paymentId: razorpay_payment_id,
   orderId: razorpay_order_id,
-  paidAt: new Date()
+  paidAt: new Date(),
+  status: "SUCCESS"
 };
+
+// 🎟️ Generate ticket number ONCE
+if (!booking.ticketNumber) {
+  booking.ticketNumber = generateTicketNumber();
+}
 
 await booking.save();
 
