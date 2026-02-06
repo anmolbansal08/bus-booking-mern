@@ -1,0 +1,42 @@
+{
+  "_id": {
+    "$oid": "69858f8900e45fa125770d6c"
+  },
+  "busId": {
+    "$oid": "6975c699b38d2fc366c06975"
+  },
+  "travelDate": "2026-02-22",
+  "seats": [
+    "U3"
+  ],
+  "passengers": [
+    {
+      "name": "Anmo",
+      "age": 33,
+      "gender": "Male",
+      "seatNumber": "U3",
+      "_id": {
+        "$oid": "69858f8900e45fa125770d6d"
+      }
+    }
+  ],
+  "contact": {
+    "phone": "78",
+    "email": "ma"
+  },
+  "userId": null,
+  "isGuestBooking": false,
+  "totalAmount": 1099,
+  "status": "CONFIRMED",
+  "payment": {
+    "status": "SUCCESS"
+  },
+  "createdAt": {
+    "$date": "2026-02-06T06:51:53.263Z"
+  },
+  "updatedAt": {
+    "$date": "2026-02-06T06:52:31.515Z"
+  },
+  "__v": 0,
+  "ticketNumber": "HB-260206-698761"
+}

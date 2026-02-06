@@ -1,5 +1,6 @@
 import AccountItem from "./AccountItem";
 import AccountSection from "./AccountSection";
+import { useNavigate } from "react-router-dom";
 
 // AccountDrawer.jsx
 export default function AccountDrawer({
@@ -13,6 +14,13 @@ const handleLogout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("user");
   window.location.href = "/"; // hard reset (simplest & safest)
+};
+const navigate = useNavigate();
+
+const goTo = (path) => {
+  console.log(path);
+  onClose();        // close drawer
+  navigate(path);  // soft navigation
 };
   return (
     <>
@@ -109,8 +117,19 @@ onClick={handleLogout}
             <AccountItem label="Offers" />
             <AccountItem label="Know about HriKri Bus" />
             <AccountItem label="Help" />
-            <AccountItem label="Cancel Ticket" />
-            <AccountItem label="Reschedule Ticket" />
+<AccountItem
+  label="Cancel Ticket"
+  onClick={() => goTo("/manage-ticket?action=cancel")}
+/>
+
+<AccountItem
+  label="Reschedule Ticket"
+  onClick={() => goTo("/manage-ticket?action=reschedule")}
+/>
+<AccountItem
+  label="Search Ticket"
+  onClick={() => goTo("/manage-ticket?action=search")}
+/>
           </AccountSection>
         </div>
       </div>

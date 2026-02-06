@@ -181,3 +181,32 @@ exports.retryPayment = async (req, res) => {
     attemptsLeft: MAX_RETRY_ATTEMPTS - booking.payment.attempts
   });
 };
+exports.lookupBooking = async (req, res) => {
+  const { ticketNumber, phone } = req.body;
+
+  if (!ticketNumber || !phone) {
+    return res.status(400).json({
+      message: "Ticket number and phone are required"
+    });
+  }
+
+  const booking = await Booking.findOne({
+    ticketNumber,
+    "contact.phone": phone
+  }).populate({
+    path: "busId",
+    select: "name departureTime arrivalTime routeId",
+    populate: {
+      path: "routeId",
+      select: "source destination"
+    }
+  });
+
+  if (!booking) {
+    return res.status(404).json({
+      message: "Booking not found"
+    });
+  }
+
+  res.json(booking);
+};

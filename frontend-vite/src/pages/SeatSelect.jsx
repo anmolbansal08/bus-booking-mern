@@ -18,10 +18,6 @@ export default function SeatSelect() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!token) navigate("/login");
-  }, []);
-
-  useEffect(() => {
     api.get(`/buses/${busId}?date=${travelDate}`).then(res => {
       setBus(res.data);
     });

@@ -27,6 +27,20 @@ const bookingSchema = new mongoose.Schema(
       phone: String,
       email: String
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null
+    },
+    isGuestBooking: {
+      type: Boolean,
+      default: false
+    },
+    ticketNumber: {
+      type: String,
+      unique: true,
+      index: true
+    },
     totalAmount: Number,
     status: {
       type: String,
@@ -36,9 +50,13 @@ const bookingSchema = new mongoose.Schema(
         "CONFIRMED",
         "CANCELLED",
         "EXPIRED"
-],  default: "PAYMENT_PENDING"
+      ],  default: "PAYMENT_PENDING"
     },
-
+    ticketNumber: {
+      type: String,
+      unique: true,
+      index: true
+    },
     payment: {
       status: {
         type: String,
