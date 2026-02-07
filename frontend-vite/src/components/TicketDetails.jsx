@@ -1,4 +1,4 @@
-import CancelButton from './CancelButton';
+import CancelTicket from './CancelTicket';
 import RescheduleButton from './RescheduleButton';
 
 export default function TicketDetails({ booking, action }) {
@@ -16,7 +16,7 @@ export default function TicketDetails({ booking, action }) {
       <p><strong>Status:</strong> {status}</p>
 
       {action === "cancel" && status === "CONFIRMED" && (
-        <CancelButton bookingId={booking._id} />
+        <CancelTicket bookingId={booking._id} />
       )}
 
       {action === "reschedule" && status === "CONFIRMED" && (

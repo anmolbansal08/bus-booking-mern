@@ -210,3 +210,89 @@ exports.lookupBooking = async (req, res) => {
 
   res.json(booking);
 };
+// PATCH /api/bookings/:bookingId/cancel
+exports.cancelBookingByUser = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const userId = req.user.userId;
+
+    const booking = await Booking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // ✅ ownership check
+    if (booking.userId?.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const updatedBooking = await cancelBookingInternal(booking);
+
+    res.json({
+      message: "Booking cancelled successfully",
+      booking: updatedBooking
+    });
+  } catch (err) {
+    if (err.message === "ALREADY_CANCELLED") {
+      return res.status(409).json({ message: "Booking already cancelled" });
+    }
+    if (err.message === "EXPIRED_BOOKING") {
+      return res.status(409).json({ message: "Expired booking cannot be cancelled" });
+    }
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const cancelBookingInternal = async (booking) => {
+  if (booking.status === "CANCELLED") {
+    throw new Error("ALREADY_CANCELLED");
+  }
+
+  if (booking.status === "EXPIRED") {
+    throw new Error("EXPIRED_BOOKING");
+  }
+
+  booking.status = "CANCELLED";
+  booking.cancelledAt = new Date();
+
+  await booking.save();
+  return booking;
+};
+
+// POST /api/bookings/cancel-by-ticket
+exports.cancelBookingByTicket = async (req, res) => {
+  try {
+    const { ticketNumber, phone } = req.body;
+
+    if (!ticketNumber || !phone) {
+      return res.status(400).json({
+        message: "Ticket number and phone are required"
+      });
+    }
+
+    const booking = await Booking.findOne({
+      ticketNumber,
+      "contact.phone": phone
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    const updatedBooking = await cancelBookingInternal(booking);
+
+    res.json({
+      message: "Booking cancelled successfully",
+      booking: updatedBooking
+    });
+  } catch (err) {
+    if (err.message === "ALREADY_CANCELLED") {
+      return res.status(409).json({ message: "Booking already cancelled" });
+    }
+    if (err.message === "EXPIRED_BOOKING") {
+      return res.status(409).json({ message: "Expired booking cannot be cancelled" });
+    }
+    res.status(500).json({ message: err.message });
+  }
+};
