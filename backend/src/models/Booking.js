@@ -74,7 +74,10 @@ const bookingSchema = new mongoose.Schema(
       lastFailureReason: {
         type: String
       }
-    }
+    },
+    cancelledAt: {
+  type: Date
+}
   },
   { timestamps: true }
 );
