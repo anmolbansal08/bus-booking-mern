@@ -28,20 +28,15 @@ useEffect(() => {
     setDestination(source);
   };
 
-  const search = async () => {
-    if (!source || !destination || !date) return;
-    if (source === destination) return;
+const search = () => {
+  if (!source || !destination || source === destination) return;
 
-    const res = await api.get(
-      `/routes/search?source=${source}&destination=${destination}`
-    );
-saveRecentSearch();
-if (!res.data.length) {
-  navigate(`/buses?noResults=true&date=${date}`);
-  return;
-}
-    navigate(`/buses?routeId=${res.data[0]._id}&date=${date}`);
-  };
+  saveRecentSearch();
+
+  navigate(
+    `/buses?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(destination)}&date=${date}`
+  );
+};
 
   // close calendar on outside click
   useEffect(() => {

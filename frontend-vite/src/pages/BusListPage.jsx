@@ -8,29 +8,46 @@ export default function BusListPage() {
   const [loading, setLoading] = useState(true);
   const [params] = useSearchParams();
 
-  useEffect(() => {
-    const fetchBuses = async () => {
-      try {
-        setLoading(true);
+useEffect(() => {
+  const fetchBuses = async () => {
+    setLoading(true);
 
-        const { data } = await api.get("/buses/search", {
-          params: {
-            routeId: params.get("routeId"),
-            date: params.get("date")
-          }
-        });
+    try {
+  const source = params.get("source");
+  const destination = params.get("destination");
+  const date = params.get("date");
 
-        setResults(data);
-      } catch (err) {
-        console.error(err);
+  if (!source || !destination || !date) return;
+
+      // 1️⃣ find route
+      const routeRes = await api.get("/routes/search", {
+        params: { source, destination }
+      });
+
+      if (!routeRes.data.length) {
         setResults({ total: 0, buses: [] });
-      } finally {
-        setLoading(false);
+        return;
       }
-    };
 
-    fetchBuses();
-  }, [params]);
+      // 2️⃣ fetch buses
+      const busesRes = await api.get("/buses/search", {
+        params: {
+          routeId: routeRes.data[0]._id,
+          date
+        }
+      });
+
+      setResults(busesRes.data);
+    } catch (err) {
+      console.error(err);
+      setResults({ total: 0, buses: [] });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchBuses();
+}, [params]);
 
   /* 🔄 LOADING */
   if (loading) {
