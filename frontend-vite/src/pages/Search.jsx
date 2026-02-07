@@ -113,7 +113,7 @@ if (!res.data.length) {
       <div className="bg-white rounded-2xl shadow p-3">
               {/* MAIN SEARCH PILL */}
 <div className="max-w-5xl mx-auto px-4">
-  <div className="flex items-end gap-4 border rounded-2xl bg-white shadow px-4 py-3">
+<div className="flex flex-col md:flex-row md:items-end gap-4 border rounded-2xl bg-white shadow px-4 py-3">
     
     {/* FROM */}
     <div className="flex-1">
