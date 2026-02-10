@@ -36,11 +36,6 @@ const bookingSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    ticketNumber: {
-      type: String,
-      unique: true,
-      index: true
-    },
     totalAmount: Number,
     status: {
       type: String,

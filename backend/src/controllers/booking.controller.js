@@ -1,7 +1,8 @@
 const Booking = require("../models/Booking");
 const Bus = require("../models/Bus");
-const { PAYMENT_EXPIRY_MINUTES } =require("../config/payment")
-// Create booking
+const { PAYMENT_EXPIRY_MINUTES } =require("../config/payment");
+const MAX_RETRY_ATTEMPTS = 3;
+
 exports.createBooking = async (req, res) => {
   try {
     const {
@@ -13,42 +14,49 @@ exports.createBooking = async (req, res) => {
       totalAmount
     } = req.body;
 
-    // Basic validation
     if (!busId || !travelDate || !seats?.length || !passengers?.length) {
       return res.status(400).json({ message: "Invalid booking data" });
     }
-const bus = await Bus.findById(busId);
 
-const seatMap = new Map(
-  bus.seatLayout.map(s => [s.seatNumber, s])
-);
-
-// validate female-only seats
-for (const p of passengers) {
-  const seat = seatMap.get(p.seatNumber);
-
-  if (!seat) {
-    return res.status(400).json({ message: "Invalid seat selected" });
-  }
-
-  if (seat.femaleOnly && p.gender !== "Female") {
-    return res.status(400).json({
-      message: `Seat ${seat.seatNumber} is reserved for female passengers only`
-    });
-  }
-}
-if (!bus.availableDates.includes(travelDate)) {
-  return res.status(400).json({
-    message: "Bus does not operate on selected date"
-  });
-}
     if (seats.length !== passengers.length) {
-      return res
-        .status(400)
-        .json({ message: "Seats and passengers count mismatch" });
+      return res.status(400).json({
+        message: "Seats and passengers count mismatch"
+      });
     }
 
-    // Seat availability check
+    const bus = await Bus.findById(busId);
+    if (!bus) {
+      return res.status(404).json({ message: "Bus not found" });
+    }
+
+    if (!bus.availableDates.includes(travelDate)) {
+      return res.status(400).json({
+        message: "Bus does not operate on selected date"
+      });
+    }
+
+    /* seat validation */
+    const seatMap = new Map(
+      bus.seatLayout.map(s => [s.seatNumber, s])
+    );
+
+    for (const p of passengers) {
+      const seat = seatMap.get(p.seatNumber);
+
+      if (!seat) {
+        return res.status(400).json({
+          message: "Invalid seat selected"
+        });
+      }
+
+      if (seat.femaleOnly && p.gender !== "Female") {
+        return res.status(400).json({
+          message: `Seat ${seat.seatNumber} is reserved for female passengers only`
+        });
+      }
+    }
+
+    /* block confirmed seats only (seat locking later) */
     const alreadyBooked = await Booking.find({
       busId,
       travelDate,
@@ -57,31 +65,33 @@ if (!bus.availableDates.includes(travelDate)) {
     });
 
     if (alreadyBooked.length) {
-      return res
-        .status(409)
-        .json({ message: "Some seats already booked" });
+      return res.status(409).json({
+        message: "Some seats already booked"
+      });
     }
 
-const booking = await Booking.create({
-  busId,
-  travelDate,
-  seats,
-  passengers,
-  contact,
-  totalAmount,
-status: "PAYMENT_PENDING",
-payment: {
-  status: "PENDING",
-  attempts: 1,
-  lastAttemptAt: new Date()
-}
-});
+    const booking = await Booking.create({
+      busId,
+      travelDate,
+      seats,
+      passengers,
+      contact,
+      totalAmount,
+      userId: req.user?._id || null,
+      isGuestBooking: !req.user,
+      status: "PAYMENT_PENDING",
+      payment: {
+        status: "PENDING",
+        attempts: 1
+      }
+    });
 
     res.status(201).json(booking);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 exports.getMyBookings = async (req, res) => {
   try {
     const { email } = req.query;
@@ -101,27 +111,22 @@ exports.getMyBookings = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
 exports.cancelBooking = async (req, res) => {
   try {
     const { bookingId } = req.params;
 
     const booking = await Booking.findById(bookingId);
-
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    if (booking.status === "CANCELLED") {
-      return res.status(409).json({ message: "Booking already cancelled" });
+    if (["CANCELLED", "EXPIRED"].includes(booking.status)) {
+      return res.status(409).json({
+        message: `Booking already ${booking.status.toLowerCase()}`
+      });
     }
 
-    if (booking.status === "EXPIRED") {
-      return res
-        .status(409)
-        .json({ message: "Expired booking cannot be cancelled" });
-    }
-
-    // PAYMENT_PENDING or CONFIRMED
     booking.status = "CANCELLED";
     booking.cancelledAt = new Date();
 
@@ -136,8 +141,6 @@ exports.cancelBooking = async (req, res) => {
   }
 };
 
-const MAX_RETRY_ATTEMPTS = 3;
-
 exports.retryPayment = async (req, res) => {
   const { bookingId } = req.body;
 
@@ -146,32 +149,35 @@ exports.retryPayment = async (req, res) => {
     return res.status(404).json({ message: "Booking not found" });
   }
 
-  // ❌ expired / cancelled safety
-  if (booking.status === "CANCELLED") {
-    return res.status(400).json({ message: "Booking cancelled" });
+  if (["CANCELLED", "CONFIRMED", "EXPIRED"].includes(booking.status)) {
+    return res.status(400).json({
+      message: "Booking cannot be retried"
+    });
   }
 
-  // ❌ retry limit
   if (booking.payment.attempts >= MAX_RETRY_ATTEMPTS) {
     return res.status(400).json({
       message: "Retry limit exceeded"
     });
   }
 
-  // ❌ expiry check (reuse your existing logic)
+  /* expiry based on creation time*/
   const expiryTime = new Date(
-    Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
+    booking.createdAt.getTime() +
+      PAYMENT_EXPIRY_MINUTES * 60 * 1000
   );
 
-  if (booking.createdAt < expiryTime) {
-    booking.status = "CANCELLED";
+  if (new Date() > expiryTime) {
+    booking.status = "EXPIRED";
     await booking.save();
-    return res.status(400).json({ message: "Booking expired" });
+    return res.status(400).json({
+      message: "Booking expired"
+    });
   }
 
-  // ✅ allow retry
-  booking.status = "PAYMENT_PENDING";
+  booking.payment.attempts += 1;
   booking.payment.status = "PENDING";
+  booking.status = "PAYMENT_PENDING";
 
   await booking.save();
 
@@ -181,6 +187,7 @@ exports.retryPayment = async (req, res) => {
     attemptsLeft: MAX_RETRY_ATTEMPTS - booking.payment.attempts
   });
 };
+
 exports.lookupBooking = async (req, res) => {
   const { ticketNumber, phone } = req.body;
 

@@ -41,7 +41,7 @@ exports.getBusesByRoute = async (req, res) => {
   const { routeId, date } = req.query;
 
   const buses = await Bus.find({ routeId,availableDates:date })
-  .populate("routeId", "source destination");;
+  .populate("routeId", "source destination");
 
   const results = [];
   for (let bus of buses) {
@@ -55,10 +55,7 @@ const bookings = await Booking.find({
 
     results.push({
       ...bus.toObject(),
-      bookedSeats,
-availableSeats: bus.seatLayout.filter(
-  seat => !bookedSeats.includes(seat.seatNumber)
-)
+      bookedSeats
     });
   }
 
