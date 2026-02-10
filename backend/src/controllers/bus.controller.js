@@ -4,30 +4,34 @@ const Booking = require("../models/Booking");
 // Add bus (admin)
 exports.createBus = async (req, res) => {
   try {
-    if (!req.body.routeId || !req.body.availableDates) {
-  return res.status(400).json({ message: "Missing required fields" });
-}
-const isValidISODate = /^\d{4}-\d{2}-\d{2}$/;
+    const { availability } = req.body;
 
-if (
-  !Array.isArray(req.body.availableDates) ||
-  !req.body.availableDates.every(d => isValidISODate.test(d))
-) {
-  return res.status(400).json({
-    message: "availableDates must be in YYYY-MM-DD format"
-  });
-}
+    if (!req.body.routeId) {
+      return res.status(400).json({ message: "Missing routeId" });
+    }
+
+    if (
+      !availability ||
+      !availability.from ||
+      !availability.to ||
+      !availability.daysOfWeek?.length
+    ) {
+      return res.status(400).json({
+        message: "Availability (from, to, daysOfWeek) is required"
+      });
+    }
     const bus = await Bus.create({
       name: req.body.name,
-      routeId: req.body.routeId,          // ✅ REQUIRED
+      routeId: req.body.routeId,
       price: req.body.price,   // ✅ REQUIRED
       seatLayout: req.body.seatLayout,
       bookedSeats: [],
+      seatLayout: req.body.seatLayout,
       departureTime: req.body.departureTime,
       arrivalTime: req.body.arrivalTime,
-      amenities: req.body.amenities || [], // ✅ FIXED
-      availableDates:req.body.availableDates,
-      busInfo:req.body.busInfo
+      amenities: req.body.amenities || [],
+      availability,               // ✅ SAVE IT
+      busInfo: req.body.busInfo
     });
 
     res.status(201).json(bus);
@@ -40,16 +44,22 @@ if (
 exports.getBusesByRoute = async (req, res) => {
   const { routeId, date } = req.query;
 
-  const buses = await Bus.find({ routeId,availableDates:date })
-  .populate("routeId", "source destination");
+  const day = getDayOfWeek(date);
+
+  const buses = await Bus.find({
+    routeId,
+    "availability.from": { $lte: date },
+    "availability.to": { $gte: date },
+    "availability.daysOfWeek": day
+  }).populate("routeId", "source destination");
 
   const results = [];
   for (let bus of buses) {
-const bookings = await Booking.find({
+    const bookings = await Booking.find({
       busId: bus._id,
       travelDate: date,
-  status: { $in: ["PAYMENT_PENDING", "CONFIRMED"] }
-});
+      status: { $in: ["PAYMENT_PENDING", "CONFIRMED"] }
+    });
 
     const bookedSeats = bookings.flatMap(b => b.seats);
 
@@ -59,10 +69,10 @@ const bookings = await Booking.find({
     });
   }
 
-      res.json({
-      total: results.length,   // ✅ REQUIRED
-      buses: results
-    });
+  res.json({
+    total: results.length,
+    buses: results
+  });
 };
 exports.getBusByIdWithAvailability = async (req, res) => {
   const { busId } = req.params;
@@ -98,4 +108,9 @@ exports.getAllBusesAdmin = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+};
+const getDayOfWeek = dateStr => {
+  return ["SUN","MON","TUE","WED","THU","FRI","SAT"][
+    new Date(dateStr).getDay()
+  ];
 };
