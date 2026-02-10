@@ -23,5 +23,11 @@ app.use("/api/admin", adminRoutes);
 app.get("/", (req, res) => {
   res.send("Bus Booking API is running");
 });
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    time: new Date().toISOString()
+  });
+});
 
 module.exports = app;
