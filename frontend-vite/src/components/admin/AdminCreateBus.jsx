@@ -1,5 +1,5 @@
 import { useState } from "react";
-import api from "../../services/api"
+import api from "../../services/api";
 
 export default function AdminCreateBus() {
   const [form, setForm] = useState({
@@ -7,13 +7,15 @@ export default function AdminCreateBus() {
     routeId: "",
     departureTime: "",
     arrivalTime: "",
-    availableDates: "",
+    availabilityFrom: "",
+    availabilityTo: "",
+    daysOfWeek: "",
     seatLayout: "",
-    amenities: "",
+    amenities: ""
   });
 
   const onChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const submit = async () => {
@@ -23,13 +25,23 @@ export default function AdminCreateBus() {
         routeId: form.routeId,
         departureTime: form.departureTime,
         arrivalTime: form.arrivalTime,
-        availableDates: form.availableDates.split(","),
-        amenities: form.amenities.split(","),
+
+        availability: {
+          from: form.availabilityFrom,
+          to: form.availabilityTo,
+          daysOfWeek: form.daysOfWeek
+            .split(",")
+            .map(d => d.trim().toUpperCase())
+        },
+
+        amenities: form.amenities
+          ? form.amenities.split(",").map(a => a.trim())
+          : [],
 
         seatLayout: JSON.parse(form.seatLayout),
 
         busInfo: {
-          highlights: ["Comfortable night journey", "Clean bus"],
+          highlights: ["Comfortable journey", "Clean & punctual"],
           routeStops: [],
           boardingPoints: [],
           droppingPoints: [],
@@ -42,9 +54,9 @@ export default function AdminCreateBus() {
       };
 
       await api.post("/buses", payload);
-      alert("Bus created");
+      alert("Bus created successfully");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed");
+      alert(err.response?.data?.message || "Failed to create bus");
     }
   };
 
@@ -81,8 +93,22 @@ export default function AdminCreateBus() {
       />
 
       <input
-        name="availableDates"
-        placeholder="Available Dates (YYYY-MM-DD, comma separated)"
+        name="availabilityFrom"
+        placeholder="Availability From (YYYY-MM-DD)"
+        className="w-full border p-2"
+        onChange={onChange}
+      />
+
+      <input
+        name="availabilityTo"
+        placeholder="Availability To (YYYY-MM-DD)"
+        className="w-full border p-2"
+        onChange={onChange}
+      />
+
+      <input
+        name="daysOfWeek"
+        placeholder="Days (MON,TUE,WED,THU,FRI)"
         className="w-full border p-2"
         onChange={onChange}
       />

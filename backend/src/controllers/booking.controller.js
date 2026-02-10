@@ -29,11 +29,17 @@ exports.createBooking = async (req, res) => {
       return res.status(404).json({ message: "Bus not found" });
     }
 
-    if (!bus.availableDates.includes(travelDate)) {
-      return res.status(400).json({
-        message: "Bus does not operate on selected date"
-      });
-    }
+const searchDay = getDayOfWeek(travelDate);
+
+if (
+  travelDate < bus.availability.from ||
+  travelDate > bus.availability.to ||
+  !bus.availability.daysOfWeek.includes(searchDay)
+) {
+  return res.status(400).json({
+    message: "Bus does not operate on selected date"
+  });
+}
 
     /* seat validation */
     const seatMap = new Map(

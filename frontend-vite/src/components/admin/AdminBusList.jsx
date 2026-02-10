@@ -46,7 +46,12 @@ export default function AdminBusList() {
                 </td>
 
                 <td className="p-2 border">
-                  {bus.availableDates.join(", ")}
+                  <p>
+  {bus.availability.from} → {bus.availability.to}
+</p>
+<p>
+  Runs on: {bus.availability.daysOfWeek.join(", ")}
+</p>
                 </td>
               </tr>
             ))}

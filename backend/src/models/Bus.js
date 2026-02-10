@@ -19,7 +19,7 @@ const busSchema = new mongoose.Schema(
       type: String,
       required: true
     },
-seatLayout: [
+    seatLayout: [
   {
     seatNumber: { type: String, required: true },
     deck: { type: String, enum: ["LOWER", "UPPER"], required: true },
@@ -27,18 +27,29 @@ seatLayout: [
     price: { type: Number, required: true },
     femaleOnly: { type: Boolean, default: false } // 👈
   }
-],
+    ],
     amenities: {
       type: [String],
-      default: [],
+      default: []
     },
-    availableDates: {
-      type: [String],
-      required: true
+    availability: {
+      from: {
+        type: String, // YYYY-MM-DD
+        required: true
+      },
+      to: {
+        type: String, // YYYY-MM-DD
+        required: true
+      },
+      daysOfWeek: {
+        type: [String],
+        enum: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+        required: true
+      }
     },
     busInfo: {
-      highlights: [String],        // why book this bus
-      routeStops: [String],        // ordered city/stop names
+      highlights: [String],
+      routeStops: [String],
       boardingPoints: [
         {
           name: String,
@@ -53,7 +64,7 @@ seatLayout: [
           address: String
         }
       ],
-      restStop: {
+            restStop: {
         name: String,
         time: String,
         durationMins: Number
@@ -62,8 +73,8 @@ seatLayout: [
         cancellation: String,
         luggage: String,
         pets: String
-      },
-        type: Object,
+      },        
+      type: Object,
         default: {}
     }
   },
