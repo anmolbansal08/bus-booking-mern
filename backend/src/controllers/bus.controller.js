@@ -1,6 +1,7 @@
 const Bus = require("../models/Bus");
 const Booking = require("../models/Booking");
-
+const Route = require("../models/Route");
+const {getDayOfWeek} = require("../utils/date.utils");
 // Add bus (admin)
 exports.createBus = async (req, res) => {
   try {
@@ -109,8 +110,72 @@ exports.getAllBusesAdmin = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-const getDayOfWeek = dateStr => {
-  return ["SUN","MON","TUE","WED","THU","FRI","SAT"][
-    new Date(dateStr).getDay()
-  ];
+exports.searchBuses = async (req, res) => {
+  try {
+    const { routeId, source, destination, date } = req.query;
+
+    // 1️⃣ Validate input
+    if (!date) {
+      return res.status(400).json({ message: "Date is required" });
+    }
+
+    let finalRouteId = routeId;
+
+    // 2️⃣ Resolve routeId if only source/destination provided
+    if (!finalRouteId) {
+      if (!source || !destination) {
+        return res.status(400).json({
+          message: "Either routeId OR source & destination required"
+        });
+      }
+
+      const route = await Route.findOne({
+        source: { $regex: `^${source}$`, $options: "i" },
+        destination: { $regex: `^${destination}$`, $options: "i" }
+      });
+
+      if (!route) {
+        return res.json({ total: 0, buses: [] });
+      }
+
+      finalRouteId = route._id;
+    }
+
+    // 3️⃣ Availability filtering
+    const dayOfWeek = getDayOfWeek(date);
+
+    const buses = await Bus.find({
+      routeId: finalRouteId,
+      "availability.from": { $lte: date },
+      "availability.to": { $gte: date },
+      "availability.daysOfWeek": dayOfWeek
+    }).populate("routeId", "source destination");
+
+    // 4️⃣ Attach booked seats
+    const results = await Promise.all(
+      buses.map(async (bus) => {
+        const bookings = await Booking.find({
+          busId: bus._id,
+          travelDate: date,
+          status: { $in: ["PAYMENT_PENDING", "CONFIRMED"] }
+        });
+
+        const bookedSeats = bookings.flatMap(b => b.seats);
+
+        return {
+          ...bus.toObject(),
+          bookedSeats
+        };
+      })
+    );
+
+    return res.json({
+      total: results.length,
+      buses: results
+    });
+
+  } catch (err) {
+    console.error("Search Buses Error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
