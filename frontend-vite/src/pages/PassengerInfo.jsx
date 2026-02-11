@@ -43,11 +43,20 @@ export default function PassengerInfo() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  const [contact, setContact] = useState({
-    phone: "",
-    email: ""
-  });
+const token = localStorage.getItem("token");
+const storedUser = JSON.parse(localStorage.getItem("user"));
+const isLoggedIn = !!token && !!storedUser;
+const [contact, setContact] = useState(() => {
+  if (isLoggedIn) {
+    return {
+      phone: storedUser.phone || "",
+      email: storedUser.email || ""
+    };
+  }
+  return { phone: "", email: "" };
+});
+const [sendWhatsappUpdates, setSendWhatsappUpdates] = useState(false);
+const [editingContact, setEditingContact] = useState(!isLoggedIn);
 
   const continueBooking = async () => {
     if (!validate()) return;
@@ -94,27 +103,74 @@ export default function PassengerInfo() {
   return (
     <div className="max-w-6xl mx-auto mt-8 px-4">
           <BookingTimeline currentStep={2} />
-      <div className="bg-white rounded-xl shadow p-5 mb-6">
-        <h3 className="font-semibold mb-3">Contact details</h3>
+<div className="bg-white rounded-xl shadow p-5 mb-6">
+  <div className="flex justify-between items-center mb-3">
+    <h3 className="font-semibold">Contact details</h3>
+    {isLoggedIn && !editingContact && (
+      <button
+        onClick={() => setEditingContact(true)}
+        className="text-sm underline"
+      >
+        Edit
+      </button>
+    )}
+  </div>
 
-        <input
-          className="w-full border rounded-lg p-2 mb-3"
-          placeholder="Mobile number"
-          value={contact.phone}
-          onChange={e =>
-            setContact({ ...contact, phone: e.target.value })
-          }
-        />
+  {/* Logged-in summary view */}
+  {isLoggedIn && !editingContact ? (
+    <div className="space-y-2 text-sm">
+      <p>📞 {contact.phone}</p>
+      <p>✉️ {contact.email}</p>
 
-        <input
-          className="w-full border rounded-lg p-2"
-          placeholder="Email"
-          value={contact.email}
-          onChange={e =>
-            setContact({ ...contact, email: e.target.value })
+      {!sendWhatsappUpdates && (
+        <div className="mt-3 bg-green-100 text-green-800 text-xs p-2 rounded">
+          WhatsApp communication disabled
+        </div>
+      )}
+    </div>
+  ) : (
+    <>
+      <input
+        className="w-full border rounded-lg p-2 mb-3"
+        placeholder="Mobile number"
+        value={contact.phone}
+        onChange={e =>
+          setContact({ ...contact, phone: e.target.value })
+        }
+      />
+
+      <input
+        className="w-full border rounded-lg p-2 mb-3"
+        placeholder="Email"
+        value={contact.email}
+        onChange={e =>
+          setContact({ ...contact, email: e.target.value })
+        }
+      />
+
+      <div className="flex items-center justify-between mt-2">
+        <span className="text-sm">
+          Send booking details and trip updates on WhatsApp
+        </span>
+
+        <button
+          onClick={() =>
+            setSendWhatsappUpdates(!sendWhatsappUpdates)
           }
-        />
+          className={`w-10 h-5 rounded-full transition ${
+            sendWhatsappUpdates ? "bg-red-600" : "bg-gray-300"
+          }`}
+        >
+          <div
+            className={`h-5 w-5 bg-white rounded-full shadow transform transition ${
+              sendWhatsappUpdates ? "translate-x-5" : ""
+            }`}
+          />
+        </button>
       </div>
+    </>
+  )}
+</div>
 
       <h2 className="text-lg font-semibold mb-4">
         Passenger Information

@@ -4,7 +4,16 @@ const userSchema = new mongoose.Schema(
   {
     name: String,
     email: { type: String, unique: true },
-    password: String,
+    phone: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true
+    },
+    password: {
+      type: String,
+      select: false   // 🔥 important
+    },
     authProvider: {
       type: String,
       enum: ["local", "google"],
