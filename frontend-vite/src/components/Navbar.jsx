@@ -28,9 +28,12 @@ export default function Navbar() {
               Help
             </button>
 
-            <button className="hover:text-red-600">
-              Manage Booking
-            </button>
+<Link
+  to="/manage-ticket?action=search"
+  className="hover:text-red-600"
+>
+  Manage Booking
+</Link>
 
             {/* Account entry point (ALWAYS available) */}
             <button
@@ -39,6 +42,14 @@ export default function Navbar() {
             >
               Account
             </button>
+            {user && (
+  <Link
+    to="/my-bookings"
+    className="hover:text-red-600"
+  >
+    My Bookings
+  </Link>
+)}
             {user?.role === "ADMIN" && (
   <Link
     to="/admin"
