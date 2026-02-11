@@ -18,26 +18,14 @@ useEffect(() => {
   const date = params.get("date");
 
   if (!source || !destination || !date) return;
-
-      // 1️⃣ find route
-      const routeRes = await api.get("/routes/search", {
-        params: { source, destination }
-      });
-
-      if (!routeRes.data.length) {
-        setResults({ total: 0, buses: [] });
-        return;
-      }
-
-      // 2️⃣ fetch buses
-      const busesRes = await api.get("/buses/search", {
-        params: {
-          routeId: routeRes.data[0]._id,
-          date
-        }
-      });
-
-      setResults(busesRes.data);
+        const { data } = await api.get("/buses/search", {
+          params: {
+            source: params.get("source"),
+            destination: params.get("destination"),
+            date: params.get("date")
+          }
+        });
+        setResults(data);
     } catch (err) {
       console.error(err);
       setResults({ total: 0, buses: [] });
