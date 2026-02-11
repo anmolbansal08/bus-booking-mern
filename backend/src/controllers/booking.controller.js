@@ -2,7 +2,7 @@ const Booking = require("../models/Booking");
 const Bus = require("../models/Bus");
 const { PAYMENT_EXPIRY_MINUTES } =require("../config/payment");
 const MAX_RETRY_ATTEMPTS = 3;
-
+const {getDayOfWeek} = require("../utils/date.utils");
 exports.createBooking = async (req, res) => {
   try {
     const {
