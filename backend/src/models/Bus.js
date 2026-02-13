@@ -6,6 +6,10 @@ const busSchema = new mongoose.Schema(
       type: String,
       required: true
     },
+    isSeeded: {
+      type: Boolean,
+      default: false
+    },
     routeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Route",
@@ -20,13 +24,13 @@ const busSchema = new mongoose.Schema(
       required: true
     },
     seatLayout: [
-  {
-    seatNumber: { type: String, required: true },
-    deck: { type: String, enum: ["LOWER", "UPPER"], required: true },
-    type: { type: String, enum: ["SEATER", "SLEEPER"], required: true },
-    price: { type: Number, required: true },
-    femaleOnly: { type: Boolean, default: false } // 👈
-  }
+      {
+        seatNumber: { type: String, required: true },
+        deck: { type: String, enum: ["LOWER", "UPPER"], required: true },
+        type: { type: String, enum: ["SEATER", "SLEEPER"], required: true },
+        price: { type: Number, required: true },
+        femaleOnly: { type: Boolean, default: false } // 👈
+      }
     ],
     amenities: {
       type: [String],
@@ -64,7 +68,7 @@ const busSchema = new mongoose.Schema(
           address: String
         }
       ],
-            restStop: {
+      restStop: {
         name: String,
         time: String,
         durationMins: Number
@@ -73,12 +77,13 @@ const busSchema = new mongoose.Schema(
         cancellation: String,
         luggage: String,
         pets: String
-      },        
+      },
       type: Object,
-        default: {}
+      default: {}
     }
   },
-  { timestamps: true }
+  { timestamps: true },
+
 );
 
 module.exports = mongoose.model("Bus", busSchema);
