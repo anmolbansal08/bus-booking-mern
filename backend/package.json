@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
     "dev": "RUNTIME=local nodemon src/server.js",
-    "docker": "RUNTIME=docker node src/server.js"
+    "docker": "RUNTIME=docker node src/server.js",
+    "seed:routes": "node scripts/seedRoutes.js",
+    "seed:buses": "node scripts/seedBuses.js"
   },
   "keywords": [],
   "author": "",
