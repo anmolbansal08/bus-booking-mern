@@ -100,14 +100,10 @@ if (
 
 exports.getMyBookings = async (req, res) => {
   try {
-    const { email } = req.query;
-
-    if (!email) {
-      return res.status(400).json({ message: "Email required" });
-    }
+    const userId = req.user.id; // ✅ from JWT middleware
 
     const bookings = await Booking.find({
-      "contact.email": email
+      userId
     })
       .populate("busId")
       .sort({ createdAt: -1 });
