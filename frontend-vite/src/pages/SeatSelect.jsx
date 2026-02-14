@@ -7,21 +7,37 @@ import BusInfoTabsContent from "../components/BusInfoTabsContent";
 export default function SeatSelect() {
   const { busId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
+
   const searchParams = new URLSearchParams(location.search);
   const travelDate = searchParams.get("date");
 
   const [bus, setBus] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [recommendedSeats, setRecommendedSeats] = useState([]);
   const [activeTab, setActiveTab] = useState("WHY");
 
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const userGender = localStorage.getItem("gender"); // "MALE" | "FEMALE"
 
+  /* ---------------- FETCH BUS ---------------- */
   useEffect(() => {
-    api.get(`/buses/${busId}?date=${travelDate}`).then(res => {
-      setBus(res.data);
-    });
-  }, []);
+    if (!busId || !travelDate) return;
+
+    api.get(`/buses/${busId}?date=${travelDate}`)
+      .then(res => setBus(res.data))
+      .catch(console.error);
+  }, [busId, travelDate]);
+
+  /* ------------- FETCH RECOMMENDED SEATS ------------- */
+  useEffect(() => {
+    if (!busId || !travelDate) return;
+
+    api.get(`/buses/${busId}/recommend-seats`, {
+      params: { travelDate, gender: userGender }
+    })
+      .then(res => setRecommendedSeats(res.data.recommendedSeats || []))
+      .catch(() => setRecommendedSeats([]));
+  }, [busId, travelDate, userGender]);
 
   if (!bus) return null;
 
@@ -65,17 +81,23 @@ export default function SeatSelect() {
     }
     return rows;
   };
-const userGender = localStorage.getItem("gender"); // "MALE" | "FEMALE"
 
+  /* ---------------- RENDER SEAT ---------------- */
   const renderSeat = seat => {
     const isBooked = bus.bookedSeats.includes(seat.seatNumber);
     const isSelected = selectedSeats.includes(seat.seatNumber);
-const isFemaleRestricted =
-  seat.femaleOnly && userGender === "MALE";
+
+    const isFemaleRestricted =
+      seat.femaleOnly && userGender === "MALE";
+
+    const isRecommended = recommendedSeats.some(
+      r => r.seatNumber === seat.seatNumber
+    );
+
     return (
       <div key={seat.seatNumber} className="relative group">
         <button
-          disabled={isBooked || isFemaleRestricted}          
+          disabled={isBooked || isFemaleRestricted}
           onClick={() => toggleSeat(seat.seatNumber)}
           className={`
             relative border rounded-md font-semibold
@@ -89,39 +111,53 @@ const isFemaleRestricted =
             ${!isBooked && !isSelected && seat.type === "SEATER"
               ? "bg-white"
               : ""}
+            ${isRecommended && !isBooked && !isSelected
+              ? "ring-2 ring-yellow-400"
+              : ""}
             shadow-sm hover:shadow-md transition
           `}
         >
           {seat.seatNumber}
 
+          {/* Female indicator */}
           {seat.femaleOnly && (
             <span className="absolute top-1 left-1 w-2 h-2 bg-pink-500 rounded-full" />
+          )}
+
+          {/* Recommended star */}
+          {isRecommended && !isBooked && !isSelected && (
+            <span className="absolute -top-2 -right-2 text-yellow-500 text-xs">
+              ⭐
+            </span>
           )}
         </button>
 
         {/* Tooltip */}
         <div className="absolute -top-7 left-1/2 -translate-x-1/2 hidden group-hover:block bg-gray-900 text-white text-[11px] px-2 py-1 rounded shadow-lg whitespace-nowrap">
-{seat.femaleOnly
-  ? "Female only seat"
-  : `${seat.type} • ₹${seat.price}`}
+          {seat.femaleOnly
+            ? "Female only seat"
+            : `${seat.type} • ₹${seat.price}`}
         </div>
       </div>
     );
   };
 
+  /* ===================== UI ===================== */
   return (
     <div className="max-w-6xl mx-auto mt-6">
       <BookingTimeline currentStep={1} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* LEFT: SEATS */}
+
+        {/* LEFT SIDE */}
         <div className="md:col-span-2 bg-white p-4 rounded shadow">
           <h3 className="text-xl font-semibold mb-4">{bus.name}</h3>
 
-          {/* LOWER DECK */}
-          <h4 className="font-semibold mb-3 flex items-center gap-2 text-gray-700">
+          {/* LOWER */}
+          <h4 className="font-semibold mb-3 text-gray-700">
             ⬇ Lower Deck
           </h4>
+
           <div className="bg-gray-50 rounded-lg p-3 space-y-3 mb-6">
             {chunkSeats(lowerDeckSeats).map((row, i) => (
               <div key={i} className="flex gap-6">
@@ -130,12 +166,13 @@ const isFemaleRestricted =
             ))}
           </div>
 
-          {/* UPPER DECK */}
+          {/* UPPER */}
           {upperDeckSeats.length > 0 && (
             <>
-              <h4 className="font-semibold mb-3 flex items-center gap-2 text-gray-700">
+              <h4 className="font-semibold mb-3 text-gray-700">
                 ⬆ Upper Deck
               </h4>
+
               <div className="bg-gray-50 rounded-lg p-3 space-y-3">
                 {chunkSeats(upperDeckSeats).map((row, i) => (
                   <div key={i} className="flex gap-6">
@@ -163,11 +200,15 @@ const isFemaleRestricted =
             <span className="flex items-center gap-1">
               <span className="w-3 h-3 bg-pink-100 border border-pink-400 rounded" /> Female only
             </span>
+            <span className="flex items-center gap-1">
+              ⭐ Recommended
+            </span>
           </div>
         </div>
 
-        {/* RIGHT: INFO + SUMMARY */}
+        {/* RIGHT SIDE */}
         <div className="bg-white p-4 rounded shadow sticky top-20">
+
           {/* Tabs */}
           <div className="flex gap-4 border-b mb-4 text-xs uppercase tracking-wide">
             {tabs.map(t => (
@@ -185,8 +226,11 @@ const isFemaleRestricted =
             ))}
           </div>
 
-          {/* Tab Content */}
-<BusInfoTabsContent activeTab={activeTab} info={info} amenities={bus.amenities} />
+          <BusInfoTabsContent
+            activeTab={activeTab}
+            info={info}
+            amenities={bus.amenities}
+          />
 
           {/* SUMMARY */}
           <div className="mt-6 border-t pt-4">
@@ -201,7 +245,9 @@ const isFemaleRestricted =
               ))}
             </div>
 
-            <p className="text-lg font-bold mt-2">₹{totalAmount}</p>
+            <p className="text-lg font-bold mt-2">
+              ₹{totalAmount}
+            </p>
 
             <button
               onClick={book}
