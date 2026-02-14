@@ -179,35 +179,37 @@ exports.retryPayment = async (req, res) => {
     return res.status(404).json({ message: "Booking not found" });
   }
 
-  if (["CANCELLED", "CONFIRMED", "EXPIRED"].includes(booking.status)) {
+  // ✅ Only allow retry from PAYMENT_PENDING
+  if (booking.status !== "PAYMENT_PENDING") {
     return res.status(400).json({
-      message: "Booking cannot be retried"
+      message: `Cannot retry from status ${booking.status}`
     });
   }
 
-  if (booking.payment.attempts >= MAX_RETRY_ATTEMPTS) {
-    return res.status(400).json({
-      message: "Retry limit exceeded"
-    });
-  }
-
-  /* expiry based on creation time*/
+  // ⏱ Expiry check
   const expiryTime = new Date(
     booking.createdAt.getTime() +
-      PAYMENT_EXPIRY_MINUTES * 60 * 1000
+    PAYMENT_EXPIRY_MINUTES * 60 * 1000
   );
 
   if (new Date() > expiryTime) {
     booking.status = "EXPIRED";
+    booking.payment.status = "FAILED";
     await booking.save();
     return res.status(400).json({
       message: "Booking expired"
     });
   }
 
+  // 🔁 Retry limit
+  if (booking.payment.attempts >= MAX_RETRY_ATTEMPTS) {
+    return res.status(400).json({
+      message: "Retry limit exceeded"
+    });
+  }
+
   booking.payment.attempts += 1;
   booking.payment.status = "PENDING";
-  booking.status = "PAYMENT_PENDING";
 
   await booking.save();
 
