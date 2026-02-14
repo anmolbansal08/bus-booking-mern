@@ -6,6 +6,7 @@ const {
   getBusesByRoute,
   getBusByIdWithAvailability,
   searchBuses,
+  getRecommendedSeats
 } = require("../controllers/bus.controller");
 
 // create bus
@@ -13,6 +14,8 @@ router.post("/", createBus);
 
 // search buses by route + date
 router.get("/search", searchBuses);
+
+router.get("/:busId/recommend-seats", getRecommendedSeats);
 
 // 🔥 get SINGLE bus with availability (MUST BE LAST)
 router.get("/:busId", getBusByIdWithAvailability);

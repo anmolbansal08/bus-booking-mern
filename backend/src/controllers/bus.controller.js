@@ -179,3 +179,89 @@ exports.searchBuses = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+exports.getRecommendedSeats = async (req, res) => {
+  try {
+    const { busId } = req.params;
+    const { travelDate, gender } = req.query;
+
+    if (!travelDate) {
+      return res.status(400).json({
+        message: "travelDate is required"
+      });
+    }
+
+    // 🔥 Use lean() to avoid mongoose internal fields
+    const bus = await Bus.findById(busId).lean();
+    if (!bus) {
+      return res.status(404).json({
+        message: "Bus not found"
+      });
+    }
+
+    // Get confirmed bookings
+    const confirmedBookings = await Booking.find({
+      busId,
+      travelDate,
+      status: "CONFIRMED"
+    }).lean();
+
+    // Create booked seat set
+    const bookedSeats = new Set(
+      confirmedBookings.flatMap(b => b.seats)
+    );
+
+    // Score seats
+const scoredSeats = bus.seatLayout
+  .filter(seat => {
+    if (bookedSeats.has(seat.seatNumber)) return false;
+    if (seat.femaleOnly && gender === "MALE") return false;
+    return true;
+  })
+  .map(seat => {
+    let score = 50;
+
+    // Deck preference
+    if (seat.deck === "LOWER") score += 10;
+
+    // Seat type
+    if (seat.type === "SEATER") score += 5;
+
+    // Female preference
+    if (seat.femaleOnly && gender === "FEMALE") {
+      score += 25;
+    }
+
+    // Price sensitivity
+    score += Math.max(0, 1200 - seat.price) / 25;
+
+    // Avoid edge seats
+    const seatNum = parseInt(seat.seatNumber.replace(/\D/g, ""));
+    if (seatNum % 3 !== 0) score += 5;
+
+    // Random tie-breaker
+    score += Math.random() * 5;
+
+    return {
+      seatNumber: seat.seatNumber,
+      deck: seat.deck,
+      type: seat.type,
+      price: seat.price,
+      femaleOnly: seat.femaleOnly,
+      score
+    };
+  })
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 3);
+
+    return res.json({
+      recommendedSeats: scoredSeats
+    });
+
+  } catch (error) {
+    console.error("Seat recommendation error:", error);
+    return res.status(500).json({
+      message: "Something went wrong"
+    });
+  }
+};
