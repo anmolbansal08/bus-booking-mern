@@ -3,6 +3,7 @@ const Bus = require("../models/Bus");
 const { PAYMENT_EXPIRY_MINUTES } =require("../config/payment");
 const MAX_RETRY_ATTEMPTS = 3;
 const {getDayOfWeek} = require("../utils/date.utils");
+const SeatLock=require("../models/SeatLock");
 exports.createBooking = async (req, res) => {
   try {
     const {
@@ -29,17 +30,17 @@ exports.createBooking = async (req, res) => {
       return res.status(404).json({ message: "Bus not found" });
     }
 
-const searchDay = getDayOfWeek(travelDate);
+    const searchDay = getDayOfWeek(travelDate);
 
-if (
-  travelDate < bus.availability.from ||
-  travelDate > bus.availability.to ||
-  !bus.availability.daysOfWeek.includes(searchDay)
-) {
-  return res.status(400).json({
-    message: "Bus does not operate on selected date"
-  });
-}
+    if (
+      travelDate < bus.availability.from ||
+      travelDate > bus.availability.to ||
+      !bus.availability.daysOfWeek.includes(searchDay)
+    ) {
+      return res.status(400).json({
+        message: "Bus does not operate on selected date"
+      });
+    }
 
     /* seat validation */
     const seatMap = new Map(
@@ -62,7 +63,7 @@ if (
       }
     }
 
-    /* block confirmed seats only (seat locking later) */
+    /* 🔥 BLOCK CONFIRMED SEATS */
     const alreadyBooked = await Booking.find({
       busId,
       travelDate,
@@ -76,6 +77,31 @@ if (
       });
     }
 
+    /* 🔥 SEAT LOCKING STARTS HERE */
+
+    const lockExpiry = new Date(
+      Date.now() + PAYMENT_EXPIRY_MINUTES * 60 * 1000
+    );
+
+    try {
+      for (const seat of seats) {
+        await SeatLock.create({
+          busId,
+          travelDate,
+          seatNumber: seat,
+          lockedUntil: lockExpiry
+        });
+      }
+    } catch (err) {
+      if (err.code === 11000) {
+        return res.status(409).json({
+          message: "Seat just got locked by another user"
+        });
+      }
+      throw err;
+    }
+
+    /* CREATE BOOKING */
     const booking = await Booking.create({
       busId,
       travelDate,
@@ -93,7 +119,9 @@ if (
     });
 
     res.status(201).json(booking);
+
   } catch (err) {
+    console.error("Create booking error:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -151,35 +179,37 @@ exports.retryPayment = async (req, res) => {
     return res.status(404).json({ message: "Booking not found" });
   }
 
-  if (["CANCELLED", "CONFIRMED", "EXPIRED"].includes(booking.status)) {
+  // ✅ Only allow retry from PAYMENT_PENDING
+  if (booking.status !== "PAYMENT_PENDING") {
     return res.status(400).json({
-      message: "Booking cannot be retried"
+      message: `Cannot retry from status ${booking.status}`
     });
   }
 
-  if (booking.payment.attempts >= MAX_RETRY_ATTEMPTS) {
-    return res.status(400).json({
-      message: "Retry limit exceeded"
-    });
-  }
-
-  /* expiry based on creation time*/
+  // ⏱ Expiry check
   const expiryTime = new Date(
     booking.createdAt.getTime() +
-      PAYMENT_EXPIRY_MINUTES * 60 * 1000
+    PAYMENT_EXPIRY_MINUTES * 60 * 1000
   );
 
   if (new Date() > expiryTime) {
     booking.status = "EXPIRED";
+    booking.payment.status = "FAILED";
     await booking.save();
     return res.status(400).json({
       message: "Booking expired"
     });
   }
 
+  // 🔁 Retry limit
+  if (booking.payment.attempts >= MAX_RETRY_ATTEMPTS) {
+    return res.status(400).json({
+      message: "Retry limit exceeded"
+    });
+  }
+
   booking.payment.attempts += 1;
   booking.payment.status = "PENDING";
-  booking.status = "PAYMENT_PENDING";
 
   await booking.save();
 

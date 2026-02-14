@@ -6,7 +6,7 @@ const {
   PAYMENT_EXPIRY_MINUTES,
   MAX_RETRY_ATTEMPTS
 } = require("../config/payment");
-
+const SeatLock = require("../models/SeatLock");
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET
@@ -78,6 +78,11 @@ if (!booking.ticketNumber) {
 
 await booking.save();
 
+await SeatLock.deleteMany({
+  busId: booking.busId,
+  travelDate: booking.travelDate,
+  seatNumber: { $in: booking.seats }
+});
 res.json({
   message: "Payment verified and booking confirmed",
   booking
@@ -101,53 +106,14 @@ exports.markPaymentFailed = async (req, res) => {
   booking.payment.lastFailureReason = reason || "Payment failed";
 
   await booking.save();
-
+await SeatLock.deleteMany({
+  busId: booking.busId,
+  travelDate: booking.travelDate,
+  seatNumber: { $in: booking.seats }
+});
   res.json({
     message: "Payment marked as failed",
     bookingId: booking._id,
     attempts: booking.payment.attempts
-  });
-};
-
-exports.retryPayment = async (req, res) => {
-  const { bookingId } = req.body;
-
-  const booking = await Booking.findById(bookingId);
-  if (!booking) {
-    return res.status(404).json({ message: "Booking not found" });
-  }
-
-  if (booking.status === "CANCELLED") {
-    return res.status(400).json({ message: "Booking cancelled" });
-  }
-
-  // ⏱ expiry check
-  const expiryTime = new Date(
-    Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
-  );
-
-  if (booking.createdAt < expiryTime) {
-    booking.status = "CANCELLED";
-    await booking.save();
-    return res.status(400).json({ message: "Booking expired" });
-  }
-
-  // 🔁 retry limit
-  if (booking.payment.attempts >= MAX_RETRY_ATTEMPTS) {
-    return res.status(400).json({
-      message: "Retry limit exceeded"
-    });
-  }
-
-  // ✅ allow retry
-  booking.payment.status = "PENDING";
-  booking.payment.attempts += 1;
-
-  await booking.save();
-
-  res.json({
-    message: "Retry allowed",
-    bookingId: booking._id,
-    attemptsLeft: MAX_RETRY_ATTEMPTS - booking.payment.attempts
   });
 };

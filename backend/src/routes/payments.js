@@ -1,8 +1,8 @@
 const express = require("express");
-const { mockPaymentSuccess,createRazorpayOrder,verifyRazorpayPayment,markPaymentFailed,retryPayment } = require("../controllers/payment.controller");
+const {createRazorpayOrder,verifyRazorpayPayment,markPaymentFailed } = require("../controllers/payment.controller");
+const {retryPayment} = require("../controllers/booking.controller");
 const router = express.Router();
 
-// router.post("/mock-success", mockPaymentSuccess);
 router.post("/razorpay/order", createRazorpayOrder);
 router.post("/razorpay/verify", verifyRazorpayPayment);
 

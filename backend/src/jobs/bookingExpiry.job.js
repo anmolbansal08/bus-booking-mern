@@ -1,10 +1,10 @@
 const cron = require("node-cron");
 const Booking = require("../models/Booking");
 const { PAYMENT_EXPIRY_MINUTES } = require("../config/payment");
-
+const SeatLock = require("../models/SeatLock");
 function startBookingExpiryJob() {
-  // runs every 5 minutes
-  cron.schedule("*/5 * * * *", async () => {
+  // runs every 10 minutes
+  cron.schedule("*/10 * * * *", async () => {
     try {
       const expiryTime = new Date(
         Date.now() - PAYMENT_EXPIRY_MINUTES * 60 * 1000
@@ -22,7 +22,9 @@ function startBookingExpiryJob() {
           }
         }
       );
-
+await SeatLock.deleteMany({
+  lockedUntil: { $lt: new Date() }
+});
       if (result.modifiedCount > 0) {
         console.log(
           `[CRON] Expired ${result.modifiedCount} unpaid bookings`
@@ -33,7 +35,7 @@ function startBookingExpiryJob() {
     }
   });
 
-  console.log("[CRON] Booking expiry job scheduled (every 5 minutes)");
+  console.log("[CRON] Booking expiry job scheduled (every 10 minutes)");
 }
 
 module.exports = startBookingExpiryJob;
