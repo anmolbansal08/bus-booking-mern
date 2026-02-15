@@ -19,6 +19,7 @@ import AdminBusList from "./components/admin/AdminBusList";
 import AdminCreateBus from "./components/admin/AdminCreateBus";
 import AdminBookings from "./components/admin/AdminBooking";
 import ManageTicket from "./components/ManageTicket";
+import PaymentProcessing from "./pages/PaymentProcessing";
 
 export default function App() {
   console.log("API BASE URL:", import.meta.env.VITE_API_BASE_URL);
@@ -36,7 +37,7 @@ export default function App() {
           <Route path="/payment" element={<Payment />} />
           <Route path="/booking-success" element={<BookingSuccess />} />
           <Route path="/payment-failed/:bookingId" element={<PaymentFailed />} />
-
+          <Route path="/payment-processing/:bookingId" element={<PaymentProcessing />} />
           {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

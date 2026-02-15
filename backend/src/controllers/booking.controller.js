@@ -249,3 +249,13 @@ exports.lookupBooking = async (req, res) => {
 
   res.json(booking);
 };
+
+exports.getBookingById = async (req, res) => {
+  const booking = await Booking.findById(req.params.bookingId);
+
+  if (!booking) {
+    return res.status(404).json({ message: "Booking not found" });
+  }
+
+  res.json(booking);
+};
