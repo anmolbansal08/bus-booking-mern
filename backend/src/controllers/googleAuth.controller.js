@@ -5,10 +5,10 @@ const User = require("../models/User");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.googleLogin = async (req, res) => {
-  const { token } = req.body;
+  const { token: googleToken } = req.body;
 
   const ticket = await client.verifyIdToken({
-    idToken: token,
+    idToken: googleToken,
     audience: process.env.GOOGLE_CLIENT_ID,
   });
 
@@ -16,24 +16,30 @@ exports.googleLogin = async (req, res) => {
 
   let user = await User.findOne({ email });
   if (!user) {
-    user = await User.create({ email, name,authProvider: "google" });
+    user = await User.create({
+      email,
+      name,
+      authProvider: "google"
+    });
   }
 
-const jwtToken = jwt.sign(
-  { userId: user._id,
-    role: user.role
-  },
-  process.env.JWT_SECRET,
-  { expiresIn: "7d" }
-);
+  const jwtToken = jwt.sign(
+    {
+      userId: user._id,
+      role: user.role
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
 
   res.json({
-  token,
-  user: {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role
-  }
-});
+    token: jwtToken,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role
+    }
+  });
 };
