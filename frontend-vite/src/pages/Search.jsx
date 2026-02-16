@@ -90,6 +90,26 @@ const search = () => {
     setDestination(s.destination);
     setDate(s.date);
   }
+  const [availableDestinations, setAvailableDestinations] = useState([]);
+  useEffect(() => {
+  if (!source) {
+    setAvailableDestinations([]);
+    return;
+  }
+
+  const fetchDestinations = async () => {
+    try {
+      const res = await api.get(
+        `/routes/destinations?source=${encodeURIComponent(source)}`
+      );
+      setAvailableDestinations(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchDestinations();
+}, [source]);
   return (
     <>
   <div className="bg-gray-50 py-6">
@@ -134,13 +154,12 @@ const search = () => {
 
     {/* TO */}
     <div className="flex-1">
-      <AutocompleteInput
-        label="To"
-        value={destination}
-        onChange={setDestination}
-        suggestions={CITIES}
-        inputClass="text-base font-semibold"
-      />
+<AutocompleteInput
+  label="To"
+  value={destination}
+  onChange={setDestination}
+  suggestions={availableDestinations.length > 0 ? availableDestinations : CITIES}
+/>
     </div>
 
     {/* DATE */}

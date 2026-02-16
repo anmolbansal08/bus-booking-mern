@@ -21,3 +21,17 @@ exports.searchRoutes = async (req, res) => {
 
   res.json(routes);
 };
+
+exports.getDestinationsBySource = async (req, res) => {
+  const { source } = req.query;
+
+  if (!source) {
+    return res.json([]);
+  }
+
+  const destinations = await Route.distinct("destination", {
+    source: source
+  });
+
+  res.json(destinations);
+};
