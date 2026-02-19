@@ -3,6 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import BookingTimeline from "../components/BookingTimeline";
 import BusInfoTabsContent from "../components/BusInfoTabsContent";
+import { useBookingStore } from "../store/bookingStore";
 
 export default function SeatSelect() {
   const { busId } = useParams();
@@ -17,9 +18,15 @@ export default function SeatSelect() {
   const [recommendedSeats, setRecommendedSeats] = useState([]);
   const [activeTab, setActiveTab] = useState("WHY");
 
-  const userGender = localStorage.getItem("gender"); // "MALE" | "FEMALE"
+const {
+  setBus: storeBus,
+  setTravelDate,
+  setSelectedSeats: storeSeats,
+  startTimer
+} = useBookingStore();
 
-  /* ---------------- FETCH BUS ---------------- */
+  const userGender = localStorage.getItem("gender");
+
   useEffect(() => {
     if (!busId || !travelDate) return;
 
@@ -28,7 +35,6 @@ export default function SeatSelect() {
       .catch(console.error);
   }, [busId, travelDate]);
 
-  /* ------------- FETCH RECOMMENDED SEATS ------------- */
   useEffect(() => {
     if (!busId || !travelDate) return;
 
@@ -41,7 +47,7 @@ export default function SeatSelect() {
 
   if (!bus) return null;
 
-  const info = bus.busInfo || {};
+    const info = bus.busInfo || {};
 
   const tabs = [
     { key: "WHY", label: "Why book" },
@@ -69,12 +75,13 @@ export default function SeatSelect() {
   }, 0);
 
   const book = () => {
-    navigate("/passenger-info", {
-      state: { bus, selectedSeats, travelDate }
-    });
-  };
-
-  const chunkSeats = (seats, size = 3) => {
+    storeBus(bus);
+    setTravelDate(travelDate);
+    storeSeats(selectedSeats);
+startTimer();
+    navigate("/passenger-info");
+  }
+     const chunkSeats = (seats, size = 3) => {
     const rows = [];
     for (let i = 0; i < seats.length; i += size) {
       rows.push(seats.slice(i, i + size));
@@ -141,13 +148,11 @@ export default function SeatSelect() {
       </div>
     );
   };
-
-  /* ===================== UI ===================== */
   return (
     <div className="max-w-6xl mx-auto mt-6">
       <BookingTimeline currentStep={1} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+ <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         {/* LEFT SIDE */}
         <div className="md:col-span-2 bg-white p-4 rounded shadow">
@@ -249,14 +254,14 @@ export default function SeatSelect() {
               ₹{totalAmount}
             </p>
 
-            <button
-              onClick={book}
-              disabled={!selectedSeats.length}
-              className="w-full mt-4 bg-red-600 text-white py-2 rounded disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Confirm Booking
-            </button>
-          </div>
+      <button
+        onClick={book}
+        disabled={!selectedSeats.length}
+        className="w-full mt-4 bg-red-600 text-white py-2 rounded disabled:opacity-40"
+      >
+        Confirm Booking
+      </button>
+                </div>
         </div>
       </div>
     </div>

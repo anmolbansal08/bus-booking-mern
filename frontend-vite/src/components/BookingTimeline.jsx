@@ -7,12 +7,10 @@ export default function BookingTimeline({ currentStep }) {
     { label: "Search", path: "/" },
     { label: "Seats", path: -1 },
     { label: "Passenger Info", path: "/passenger-info" },
-    { label: "Payment", path: "/payment" },
-    { label: "Confirmed", path: "/booking-success" }
   ];
 
   const handleClick = (index) => {
-    if (index > currentStep) return; // block future steps
+    if (index > currentStep) return;
 
     const step = steps[index];
 
@@ -24,29 +22,66 @@ export default function BookingTimeline({ currentStep }) {
   };
 
   return (
-    <div className="border-b bg-white">
-      <div className="max-w-6xl mx-auto flex text-sm">
+    <div className="bg-white border-b">
+      <div className="max-w-6xl mx-auto flex items-center justify-between py-6 px-4">
         {steps.map((step, index) => {
           const isActive = index === currentStep;
           const isCompleted = index < currentStep;
           const isDisabled = index > currentStep;
 
           return (
-            <div
-              key={step.label}
-              onClick={() => handleClick(index)}
-              className={`
-                px-6 py-4 cursor-pointer transition relative
-                ${isActive ? "text-red-600 font-semibold" : ""}
-                ${isCompleted ? "text-gray-700 hover:text-red-600" : ""}
-                ${isDisabled ? "text-gray-400 cursor-not-allowed" : ""}
-              `}
-            >
-              {index + 1}. {step.label}
+            <div key={step.label} className="flex items-center flex-1">
+              
+              {/* STEP */}
+              <div
+                onClick={() => handleClick(index)}
+                className={`flex flex-col items-center flex-1 ${
+                  isDisabled ? "cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                {/* Circle */}
+                <div
+                  className={`
+                    w-8 h-8 flex items-center justify-center rounded-full text-sm font-semibold
+                    transition
+                    ${
+                      isActive
+                        ? "bg-red-600 text-white"
+                        : isCompleted
+                        ? "bg-green-500 text-white"
+                        : "bg-gray-200 text-gray-600"
+                    }
+                  `}
+                >
+                  {index + 1}
+                </div>
 
-              {/* Active underline */}
-              {isActive && (
-                <div className="absolute left-0 bottom-0 w-full h-[2px] bg-red-600" />
+                {/* Label */}
+                <span
+                  className={`mt-2 text-xs ${
+                    isActive
+                      ? "text-red-600 font-semibold"
+                      : isCompleted
+                      ? "text-gray-800"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {step.label}
+                </span>
+              </div>
+
+              {/* Connector Line */}
+              {index < steps.length - 1 && (
+                <div
+                  className={`
+                    flex-1 h-[2px] mx-2
+                    ${
+                      index < currentStep
+                        ? "bg-green-500"
+                        : "bg-gray-200"
+                    }
+                  `}
+                />
               )}
             </div>
           );

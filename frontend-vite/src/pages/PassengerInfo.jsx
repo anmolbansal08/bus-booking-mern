@@ -1,152 +1,92 @@
-import { useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import api from "../services/api";
 import BookingTimeline from "../components/BookingTimeline";
+import { useBookingStore } from "../store/BookingStore";
+import { passengerSchema, contactSchema } from "../validation/passenger.schema";
 
-/* ------------------- REGEX ------------------- */
-const nameRegex = /^[A-Za-z ]{2,50}$/;
-const phoneRegex = /^\+?[1-9]\d{7,14}$/;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+/* ================= FULL FORM SCHEMA ================= */
 
-/* ------------------- FIELD VALIDATOR ------------------- */
-const validatePassengerField = (field, value) => {
-  switch (field) {
-    case "name":
-  if (!value.trim()) return "Please enter passenger name";
-  if (value.trim().length < 2)
-    return "Name must be at least 2 characters";
-  if (!/^[A-Za-z ]+$/.test(value.trim()))
-    return "Only letters and spaces are allowed";
-  return "";
-
-    case "age":
-      if (!value) return "Age is required";
-      if (value < 1 || value > 120)
-        return "Enter valid age (1-120)";
-      return "";
-
-    case "gender":
-      if (!value) return "Gender required";
-      return "";
-
-    default:
-      return "";
-  }
-};
+const formSchema = z.object({
+  contact: contactSchema,
+  passengers: z.array(passengerSchema)
+});
 
 export default function PassengerInfo() {
-  const { state } = useLocation();
   const navigate = useNavigate();
 
-  const { bus, selectedSeats, travelDate } = state || {};
+  /* ================= GLOBAL STORE ================= */
 
-  if (!bus || !selectedSeats) {
+  const {
+    bus,
+    selectedSeats,
+    travelDate,
+    bookingExpiresAt,
+    resetBooking
+  } = useBookingStore();
+
+  if (!bus || !selectedSeats?.length) {
     return <p className="text-center mt-10">Invalid access</p>;
   }
 
-  /* ------------------- STATE ------------------- */
-  const [passengers, setPassengers] = useState(
-    selectedSeats.map(seat => ({
-      seatNumber: seat,
-      name: "",
-      age: "",
-      gender: ""
-    }))
-  );
+  /* ================= TIMER ================= */
 
-  const token = localStorage.getItem("token");
-  const storedUser = JSON.parse(localStorage.getItem("user"));
-  const isLoggedIn = !!token && !!storedUser;
+  const [timeLeft, setTimeLeft] = useState(0);
 
-  const [contact, setContact] = useState(() =>
-    isLoggedIn
-      ? {
-          phone: storedUser.phone || "",
-          email: storedUser.email || ""
-        }
-      : { phone: "", email: "" }
-  );
+  useEffect(() => {
+    if (!bookingExpiresAt) return;
 
-  const [errors, setErrors] = useState({});
-  const [editingContact, setEditingContact] = useState(!isLoggedIn);
-  const [sendWhatsappUpdates, setSendWhatsappUpdates] = useState(false);
+    const interval = setInterval(() => {
+      const remaining = bookingExpiresAt - Date.now();
 
-  /* ------------------- UPDATE PASSENGER ------------------- */
-  const updatePassenger = (index, field, value) => {
-    const copy = [...passengers];
+      if (remaining <= 0) {
+        clearInterval(interval);
+        alert("Session expired. Please select seats again.");
+        resetBooking();
+        navigate("/");
+      } else {
+        setTimeLeft(remaining);
+      }
+    }, 1000);
 
-    if (field === "name") {
-      value = value.replace(/[^A-Za-z ]/g, "");
+    return () => clearInterval(interval);
+  }, [bookingExpiresAt, navigate, resetBooking]);
+
+  /* ================= FORM ================= */
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    formState: { errors, isValid }
+  } = useForm({
+    resolver: zodResolver(formSchema),
+    mode: "onChange",
+    defaultValues: {
+      contact: {
+        phone: "",
+        email: ""
+      },
+      passengers: selectedSeats.map(seat => ({
+        seatNumber: seat,
+        name: "",
+        age: "",
+        gender: ""
+      }))
     }
+  });
 
-    if (field === "age") {
-      value = value.replace(/\D/g, "");
-    }
+  const { fields } = useFieldArray({
+    control,
+    name: "passengers"
+  });
 
-    copy[index][field] = value;
-    setPassengers(copy);
+  /* ================= SUBMIT ================= */
 
-    const error = validatePassengerField(field, value);
-    setErrors(prev => ({
-      ...prev,
-      [`${field}${index}`]: error
-    }));
-  };
-
-  /* ------------------- UPDATE CONTACT ------------------- */
-  const updateContact = (field, value) => {
-    setContact(prev => ({ ...prev, [field]: value }));
-
-    let error = "";
-    if (field === "phone" && !phoneRegex.test(value))
-      error = "Enter valid 10-digit mobile number";
-
-    if (field === "email" && !emailRegex.test(value))
-      error = "Enter valid email address";
-
-    setErrors(prev => ({
-      ...prev,
-      [field]: error
-    }));
-  };
-
-  /* ------------------- VALIDATE ALL ------------------- */
-  const validate = () => {
-    const newErrors = {};
-
-    passengers.forEach((p, idx) => {
-      ["name", "age", "gender"].forEach(field => {
-        const error = validatePassengerField(field, p[field]);
-        if (error) newErrors[`${field}${idx}`] = error;
-      });
-    });
-
-    if (!phoneRegex.test(contact.phone))
-      newErrors.phone = "Enter valid 10-digit mobile number";
-
-    if (!emailRegex.test(contact.email))
-      newErrors.email = "Enter valid email address";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  /* ------------------- FORM VALIDITY ------------------- */
-  const isFormValid =
-    passengers.every(
-      p =>
-        nameRegex.test(p.name.trim()) &&
-        p.age >= 1 &&
-        p.age <= 120 &&
-        p.gender
-    ) &&
-    phoneRegex.test(contact.phone) &&
-    emailRegex.test(contact.email);
-
-  /* ------------------- CONTINUE BOOKING ------------------- */
-  const continueBooking = async () => {
-    if (!validate()) return;
-
+  const onSubmit = async (data) => {
     try {
       const totalAmount = selectedSeats.reduce((sum, seatNo) => {
         const seat = bus.seatLayout.find(
@@ -159,195 +99,161 @@ export default function PassengerInfo() {
         busId: bus._id,
         travelDate,
         seats: selectedSeats,
-        passengers,
-        contact,
+        passengers: data.passengers,
+        contact: data.contact,
         totalAmount
       });
 
-      localStorage.setItem("bookingEmail", contact.email);
-
       navigate("/payment", {
-        state: {
-          booking: res.data,
-          bus,
-          travelDate,
-          seats: selectedSeats
-        }
+        state: { booking: res.data }
       });
+
     } catch (err) {
-      alert(
-        err.response?.data?.message || "Booking failed. Try again."
-      );
+      alert(err.response?.data?.message || "Booking failed");
     }
   };
 
-  /* ------------------- UI ------------------- */
+  /* ================= UI ================= */
+
   return (
     <div className="max-w-6xl mx-auto mt-8 px-4">
       <BookingTimeline currentStep={2} />
 
-      {/* CONTACT CARD */}
-      <div className="bg-white rounded-xl shadow p-5 mb-6">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="font-semibold">Contact details</h3>
-          {isLoggedIn && !editingContact && (
-            <button
-              onClick={() => setEditingContact(true)}
-              className="text-sm underline"
-            >
-              Edit
-            </button>
-          )}
+      {/* TIMER */}
+      {bookingExpiresAt && (
+        <div className="bg-yellow-50 border border-yellow-400 text-yellow-800 px-4 py-2 rounded mb-6 text-sm flex justify-between">
+          <span>⏳ Complete booking in</span>
+          <span className="font-semibold">
+            {Math.floor(timeLeft / 60000)}:
+            {String(Math.floor((timeLeft % 60000) / 1000)).padStart(2, "0")}
+          </span>
         </div>
+      )}
 
-        {isLoggedIn && !editingContact ? (
-          <div className="space-y-2 text-sm">
-            <p>📞 {contact.phone}</p>
-            <p>✉️ {contact.email}</p>
-          </div>
-        ) : (
-          <>
-            <input
-              className={`w-full border rounded-lg p-2 mb-2 ${
-                errors.phone
-                  ? "border-red-500"
-                  : "border-gray-300"
-              }`}
-              placeholder="Mobile number"
-              value={contact.phone}
-              onChange={e =>
-                updateContact("phone", e.target.value)
-              }
-            />
-            {errors.phone && (
-              <p className="text-red-500 text-xs mb-2">
-                {errors.phone}
-              </p>
-            )}
+      {/* CONTACT */}
+      <div className="bg-white rounded-xl shadow p-5 mb-6">
+        <h3 className="font-semibold mb-4">Contact details</h3>
 
-            <input
-              className={`w-full border rounded-lg p-2 mb-2 ${
-                errors.email
-                  ? "border-red-500"
-                  : "border-gray-300"
-              }`}
-              placeholder="Email"
-              value={contact.email}
-              onChange={e =>
-                updateContact("email", e.target.value)
-              }
-            />
-            {errors.email && (
-              <p className="text-red-500 text-xs mb-2">
-                {errors.email}
-              </p>
-            )}
-          </>
+        <input
+          {...register("contact.phone")}
+          placeholder="Mobile number"
+          className={`w-full border rounded-lg p-2 mb-2 ${
+            errors.contact?.phone ? "border-red-500" : "border-gray-300"
+          }`}
+        />
+        {errors.contact?.phone && (
+          <p className="text-red-500 text-xs mb-2">
+            {errors.contact.phone.message}
+          </p>
+        )}
+
+        <input
+          {...register("contact.email")}
+          placeholder="Email"
+          className={`w-full border rounded-lg p-2 mb-2 ${
+            errors.contact?.email ? "border-red-500" : "border-gray-300"
+          }`}
+        />
+        {errors.contact?.email && (
+          <p className="text-red-500 text-xs mb-2">
+            {errors.contact.email.message}
+          </p>
         )}
       </div>
 
       {/* PASSENGERS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
-          {passengers.map((p, idx) => (
-            <div
-              key={idx}
-              className="bg-white rounded-xl shadow p-5"
-            >
-              <h3 className="font-semibold mb-4">
-                Passenger {idx + 1} – Seat {p.seatNumber}
-              </h3>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-6">
 
-              <input
-                className={`w-full border rounded-lg p-2 mb-2 ${
-                  errors[`name${idx}`]
-                    ? "border-red-500"
-                    : "border-gray-300"
-                }`}
-                placeholder="Full Name"
-                value={p.name}
-                onChange={e =>
-                  updatePassenger(idx, "name", e.target.value)
-                }
-              />
-              {errors[`name${idx}`] && (
-                <p className="text-red-500 text-xs mb-2">
-                  {errors[`name${idx}`]}
-                </p>
-              )}
+            {fields.map((field, index) => (
+              <div key={field.id} className="bg-white rounded-xl shadow p-5">
+                <h3 className="font-semibold mb-4">
+                  Passenger {index + 1} – Seat {field.seatNumber}
+                </h3>
 
-              <input
-                type="number"
-                className={`w-full border rounded-lg p-2 mb-2 ${
-                  errors[`age${idx}`]
-                    ? "border-red-500"
-                    : "border-gray-300"
-                }`}
-                placeholder="Age"
-                value={p.age}
-                onChange={e =>
-                  updatePassenger(idx, "age", e.target.value)
-                }
-              />
-              {errors[`age${idx}`] && (
-                <p className="text-red-500 text-xs mb-2">
-                  {errors[`age${idx}`]}
-                </p>
-              )}
+                <input
+                  {...register(`passengers.${index}.name`)}
+                  placeholder="Full Name"
+                  className={`w-full border rounded-lg p-2 mb-2 ${
+                    errors.passengers?.[index]?.name
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                />
+                {errors.passengers?.[index]?.name && (
+                  <p className="text-red-500 text-xs mb-2">
+                    {errors.passengers[index].name.message}
+                  </p>
+                )}
 
-              <div className="flex gap-4 mt-2">
-                {["Male", "Female"].map(g => (
-<label
-  key={g}
-  className={`border rounded-lg px-4 py-2 cursor-pointer transition
-    ${
-      p.gender === g
-        ? "border-gray-800 bg-gray-100"
-        : "border-gray-300 hover:border-gray-400"
-    }
-  `}
->
-                    <input
-                      type="radio"
-                      checked={p.gender === g}
-                      onChange={() =>
-                        updatePassenger(idx, "gender", g)
-                      }
-                    />
-                    <span className="ml-2">{g}</span>
-                  </label>
-                ))}
+                <input
+                  type="number"
+                  {...register(`passengers.${index}.age`, {
+                    valueAsNumber: true
+                  })}
+                  placeholder="Age"
+                  className={`w-full border rounded-lg p-2 mb-2 ${
+                    errors.passengers?.[index]?.age
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
+                />
+                {errors.passengers?.[index]?.age && (
+                  <p className="text-red-500 text-xs mb-2">
+                    {errors.passengers[index].age.message}
+                  </p>
+                )}
+
+                <div className="flex gap-4 mt-2">
+                  {["Male", "Female"].map(g => (
+                    <label
+                      key={g}
+                      className="border rounded-lg px-4 py-2 cursor-pointer"
+                    >
+                      <input
+                        type="radio"
+                        value={g}
+                        {...register(`passengers.${index}.gender`)}
+                      />
+                      <span className="ml-2">{g}</span>
+                    </label>
+                  ))}
+                </div>
+                {errors.passengers?.[index]?.gender && (
+                  <p className="text-red-500 text-xs mt-2">
+                    {errors.passengers[index].gender.message}
+                  </p>
+                )}
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
 
-        {/* SUMMARY */}
-        <div className="bg-white rounded-xl shadow p-5 h-fit">
-          <h3 className="font-semibold mb-4">
-            Trip Summary
-          </h3>
-          <p className="text-sm">{bus.name}</p>
-          <p className="text-sm mt-1">
-            Seats: {selectedSeats.join(", ")}
-          </p>
-          <p className="text-sm mt-1">
-            Date: {travelDate}
-          </p>
+          </div>
 
-          <button
-            disabled={!isFormValid}
-            onClick={continueBooking}
-            className={`mt-6 w-full py-3 rounded-full text-white font-semibold ${
-              isFormValid
-                ? "bg-red-600 hover:bg-red-700"
-                : "bg-gray-400 cursor-not-allowed"
-            }`}
-          >
-            Continue Booking
-          </button>
+          {/* SUMMARY */}
+          <div className="bg-white rounded-xl shadow p-5 h-fit">
+            <h3 className="font-semibold mb-4">Trip Summary</h3>
+            <p className="text-sm">{bus.name}</p>
+            <p className="text-sm mt-1">
+              Seats: {selectedSeats.join(", ")}
+            </p>
+            <p className="text-sm mt-1">Date: {travelDate}</p>
+
+            <button
+              type="submit"
+              disabled={!isValid}
+              className={`mt-6 w-full py-3 rounded-full text-white font-semibold ${
+                isValid
+                  ? "bg-red-600 hover:bg-red-700"
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+            >
+              Continue Booking
+            </button>
+          </div>
+
         </div>
-      </div>
+      </form>
     </div>
   );
 }

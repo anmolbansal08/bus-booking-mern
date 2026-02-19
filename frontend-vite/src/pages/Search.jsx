@@ -137,7 +137,6 @@ const search = () => {
         value={source}
         onChange={setSource}
         suggestions={CITIES}
-        inputClass="text-base font-semibold"
       />
     </div>
 
