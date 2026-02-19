@@ -1,5 +1,4 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import BookingTimeline from "../components/BookingTimeline";
 
 export default function BookingSuccess() {
   const { state } = useLocation();
@@ -11,7 +10,6 @@ export default function BookingSuccess() {
 
   return (
     <div className="max-w-3xl mx-auto mt-12 px-4">
-      <BookingTimeline currentStep={4} />
 
       {/* Success Header */}
       <div className="text-center mt-8">

@@ -26,8 +26,6 @@ exports.createBus = async (req, res) => {
       routeId: req.body.routeId,
       price: req.body.price,   // ✅ REQUIRED
       seatLayout: req.body.seatLayout,
-      bookedSeats: [],
-      seatLayout: req.body.seatLayout,
       departureTime: req.body.departureTime,
       arrivalTime: req.body.arrivalTime,
       amenities: req.body.amenities || [],

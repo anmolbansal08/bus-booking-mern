@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import api from "../services/api";
 import BookingTimeline from "../components/BookingTimeline";
+import { useBookingStore } from "../store/BookingStore";
 
 /* ------------------- REGEX ------------------- */
 const nameRegex = /^[A-Za-z ]{2,50}$/;
@@ -38,8 +39,8 @@ export default function PassengerInfo() {
   const { state } = useLocation();
   const navigate = useNavigate();
 
-  const { bus, selectedSeats, travelDate } = state || {};
-
+  // const { bus, selectedSeats, travelDate } = state || {};
+const { bus, selectedSeats, travelDate } = useBookingStore();
   if (!bus || !selectedSeats) {
     return <p className="text-center mt-10">Invalid access</p>;
   }
