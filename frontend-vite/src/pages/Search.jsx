@@ -5,6 +5,9 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import CalendarPicker from "../components/CalendarPicker";
 import { POPULAR_ROUTES  } from "../constants/popular-routes";
+import useRecentSearches from "./useRecentSearches";
+import RouteSelector from "./RouteSelector";
+
 export default function SearchBar() {
   const navigate = useNavigate();
 
@@ -17,21 +20,22 @@ export default function SearchBar() {
 
   const calendarRef = useRef(null);
   const dateButtonRef = useRef(null);
-const [recentSearches, setRecentSearches] = useState([]);
-useEffect(() => {
-  const stored =
-    JSON.parse(localStorage.getItem("recentSearches")) || [];
-  setRecentSearches(stored);
-}, []);
-  const swapLocations = () => {
-    setSource(destination);
-    setDestination(source);
-  };
+  const { recentSearches, saveRecentSearch } = useRecentSearches();
+// const [recentSearches, setRecentSearches] = useState([]);
+// useEffect(() => {
+//   const stored =
+//     JSON.parse(localStorage.getItem("recentSearches")) || [];
+//   setRecentSearches(stored);
+// }, []);
+  // const swapLocations = () => {
+  //   setSource(destination);
+  //   setDestination(source);
+  // };
 
 const search = () => {
   if (!source || !destination || source === destination) return;
 
-  saveRecentSearch();
+  saveRecentSearch({ source, destination, date });
 
   navigate(
     `/buses?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(destination)}&date=${date}`
@@ -68,48 +72,48 @@ const search = () => {
     setSource(from);
     setDestination(to);
   };
-  const saveRecentSearch = () => {
-    const stored = JSON.parse(localStorage.getItem("recentSearches")) || [];
+  // const saveRecentSearch = () => {
+  //   const stored = JSON.parse(localStorage.getItem("recentSearches")) || [];
 
-    const newSearch = { source, destination, date };
-    //remove duplicates and keep max 3 for recent search
-    const filtered = stored.filter(
-      s =>
-        s.source !== source ||
-        s.destination !== destination ||
-        s.date !== date
-    );
+  //   const newSearch = { source, destination, date };
+  //   //remove duplicates and keep max 3 for recent search
+  //   const filtered = stored.filter(
+  //     s =>
+  //       s.source !== source ||
+  //       s.destination !== destination ||
+  //       s.date !== date
+  //   );
 
-    const updated = [newSearch, ...filtered].slice(0, 3);
+  //   const updated = [newSearch, ...filtered].slice(0, 3);
 
-    localStorage.setItem("recentSearches", JSON.stringify(updated));
-  };
+  //   localStorage.setItem("recentSearches", JSON.stringify(updated));
+  // };
 
   const onRecentSearch = (s) => {
     setSource(s.source);
     setDestination(s.destination);
     setDate(s.date);
   }
-  const [availableDestinations, setAvailableDestinations] = useState([]);
-  useEffect(() => {
-  if (!source) {
-    setAvailableDestinations([]);
-    return;
-  }
+//   const [availableDestinations, setAvailableDestinations] = useState([]);
+//   useEffect(() => {
+//   if (!source) {
+//     setAvailableDestinations([]);
+//     return;
+//   }
 
-  const fetchDestinations = async () => {
-    try {
-      const res = await api.get(
-        `/routes/destinations?source=${encodeURIComponent(source)}`
-      );
-      setAvailableDestinations(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+//   const fetchDestinations = async () => {
+//     try {
+//       const res = await api.get(
+//         `/routes/destinations?source=${encodeURIComponent(source)}`
+//       );
+//       setAvailableDestinations(res.data);
+//     } catch (err) {
+//       console.error(err);
+//     }
+//   };
 
-  fetchDestinations();
-}, [source]);
+//   fetchDestinations();
+// }, [source]);
   return (
     <>
   <div className="bg-gray-50 py-6">
@@ -130,36 +134,12 @@ const search = () => {
 <div className="max-w-5xl mx-auto px-4">
 <div className="flex flex-col md:flex-row md:items-end gap-4 border rounded-2xl bg-white shadow px-4 py-3">
     
-    {/* FROM */}
-    <div className="flex-1">
-      <AutocompleteInput
-        label="From"
-        value={source}
-        onChange={setSource}
-        suggestions={CITIES}
-      />
-    </div>
-
-    {/* SWAP */}
-    <div className="pb-2">
-      <button
-        onClick={swapLocations}
-        className="h-9 w-9 rounded-full border flex items-center justify-center hover:bg-gray-100"
-        title="Swap"
-      >
-        ⇄
-      </button>
-    </div>
-
-    {/* TO */}
-    <div className="flex-1">
-<AutocompleteInput
-  label="To"
-  value={destination}
-  onChange={setDestination}
-  suggestions={availableDestinations.length > 0 ? availableDestinations : CITIES}
+<RouteSelector
+  source={source}
+  setSource={setSource}
+  destination={destination}
+  setDestination={setDestination}
 />
-    </div>
 
     {/* DATE */}
     <div className="min-w-[200px]">
