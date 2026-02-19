@@ -3,7 +3,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import BookingTimeline from "../components/BookingTimeline";
 import BusInfoTabsContent from "../components/BusInfoTabsContent";
-import { useBookingStore } from "../store/bookingStore";
+import { useBookingStore } from "../store/BookingStore";
 
 export default function SeatSelect() {
   const { busId } = useParams();
