@@ -18,11 +18,12 @@ export default function SeatSelect() {
   const [recommendedSeats, setRecommendedSeats] = useState([]);
   const [activeTab, setActiveTab] = useState("WHY");
 
-  const {
-    setBus: storeBus,
-    setTravelDate,
-    setSelectedSeats: storeSeats
-  } = useBookingStore();
+const {
+  setBus: storeBus,
+  setTravelDate,
+  setSelectedSeats: storeSeats,
+  startTimer
+} = useBookingStore();
 
   const userGender = localStorage.getItem("gender");
 
@@ -77,7 +78,7 @@ export default function SeatSelect() {
     storeBus(bus);
     setTravelDate(travelDate);
     storeSeats(selectedSeats);
-
+startTimer();
     navigate("/passenger-info");
   }
      const chunkSeats = (seats, size = 3) => {
@@ -147,7 +148,6 @@ export default function SeatSelect() {
       </div>
     );
   };
-
   return (
     <div className="max-w-6xl mx-auto mt-6">
       <BookingTimeline currentStep={1} />
