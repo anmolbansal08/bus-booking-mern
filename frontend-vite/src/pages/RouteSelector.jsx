@@ -10,9 +10,20 @@ export default function RouteSelector({
   setDestination
 }) {
   const [availableDestinations, setAvailableDestinations] = useState([]);
+  const [debouncedSource, setDebouncedSource] = useState(source);
 
+  // 🔥 Debounce source input (1000ms)
   useEffect(() => {
-    if (!source) {
+    const handler = setTimeout(() => {
+      setDebouncedSource(source);
+    }, 1000);
+
+    return () => clearTimeout(handler);
+  }, [source]);
+
+  // 🔥 Fetch only when debouncedSource changes
+  useEffect(() => {
+    if (!debouncedSource) {
       setAvailableDestinations([]);
       return;
     }
@@ -20,7 +31,7 @@ export default function RouteSelector({
     const fetchDestinations = async () => {
       try {
         const res = await api.get(
-          `/routes/destinations?source=${encodeURIComponent(source)}`
+          `/routes/destinations?source=${encodeURIComponent(debouncedSource)}`
         );
         setAvailableDestinations(res.data);
       } catch (err) {
@@ -29,7 +40,7 @@ export default function RouteSelector({
     };
 
     fetchDestinations();
-  }, [source]);
+  }, [debouncedSource]);
 
   const swapLocations = () => {
     setSource(destination);
