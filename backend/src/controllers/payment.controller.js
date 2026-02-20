@@ -2,6 +2,7 @@ const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const Booking = require("../models/Booking");
 const generateTicketNumber = require("../utils/generateTicketNumber");
+const eventBus = require("../utils/eventBus")
 const {
   PAYMENT_EXPIRY_MINUTES,
   MAX_RETRY_ATTEMPTS
@@ -78,6 +79,7 @@ if (!booking.ticketNumber) {
 
 await booking.save();
 
+eventBus.emit("booking.confirmed", booking);
 await SeatLock.deleteMany({
   busId: booking.busId,
   travelDate: booking.travelDate,
