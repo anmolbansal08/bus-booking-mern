@@ -20,7 +20,7 @@ export default function SearchBar() {
 
   const { recentSearches, saveRecentSearch } = useRecentSearches();
 
-  const search = useCallback(() => {
+  const search = () => {
     if (!source || !destination) {
       setError("Please select both cities");
       return;
@@ -38,18 +38,18 @@ export default function SearchBar() {
     navigate(
       `/buses?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(destination)}&date=${date}`
     );
-  }, [source, destination, date, saveRecentSearch, navigate]);
+  };
 
-  const selectPopularRoute = useCallback((from, to) => {
+  const selectPopularRoute = (from, to) => {
     setSource(from);
     setDestination(to);
-  }, []);
+  };
 
-  const onRecentSearch = useCallback((s) => {
+  const onRecentSearch = (s) => {
     setSource(s.source);
     setDestination(s.destination);
     setDate(s.date);
-  }, []);
+  };
 
   return (
     <>
