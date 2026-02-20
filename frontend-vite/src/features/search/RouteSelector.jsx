@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import AutocompleteInput from "../components/AutocompleteInput";
-import api from "../services/api";
-import { CITIES } from "../constants/cities";
+import AutocompleteInput from "../../components/AutocompleteInput";
+import api from "../../services/api";
+import { CITIES } from "../../constants/cities";
 
 export default function RouteSelector({
   source,

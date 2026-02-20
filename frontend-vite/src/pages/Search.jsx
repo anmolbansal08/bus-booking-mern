@@ -1,8 +1,8 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import useRecentSearches from "./useRecentSearches";
-import RouteSelector from "./RouteSelector";
-import JourneyDateSelector from "./JourneyDateSelector";
+import useRecentSearches from "../features/search/hooks/useRecentSearches";
+import RouteSelector from "../features/search/RouteSelector";
+import JourneyDateSelector from "../features/search/JourneyDateSelector";
 import TrustStrip from "../features/search/TrustStrip";
 import OffersBanner from "../features/search/OffersBanner";
 import RecentSearches from "../features/search/RecentSearches";

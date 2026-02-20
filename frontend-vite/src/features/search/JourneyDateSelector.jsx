@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import CalendarPicker from "../components/CalendarPicker";
+import CalendarPicker from "../../components/CalendarPicker";
 
 export default function JourneyDateSelector({ value, onChange }) {
   const [showCalendar, setShowCalendar] = useState(false);
