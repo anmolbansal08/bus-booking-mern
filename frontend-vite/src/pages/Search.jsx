@@ -1,9 +1,12 @@
 import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { POPULAR_ROUTES } from "../constants/popular-routes";
 import useRecentSearches from "./useRecentSearches";
 import RouteSelector from "./RouteSelector";
 import JourneyDateSelector from "./JourneyDateSelector";
+import TrustStrip from "../features/search/TrustStrip";
+import OffersBanner from "../features/search/OffersBanner";
+import RecentSearches from "../features/search/RecentSearches";
+import PopularRoutes from "../features/search/PopularRoutes";
 
 const TODAY = new Date().toISOString().split("T")[0];
 
@@ -101,106 +104,10 @@ export default function SearchBar() {
         </div>
       </div>
 
-      <div className="bg-white border-t">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-center gap-6 text-sm text-gray-700">
-          <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">
-            <span className="text-green-600">✔</span>
-            <span>Safe Payments</span>
-          </div>
-
-          <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">
-            <span className="text-green-600">✔</span>
-            <span>Verified Operators</span>
-          </div>
-
-          <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm">
-            <span className="text-green-600">✔</span>
-            <span>24x7 Customer Support</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-red-50 py-6">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white border border-red-200 rounded-2xl px-6 py-4 shadow-sm">
-            <div className="flex items-center gap-3">
-              <span className="text-red-600 text-xl">🎉</span>
-              <div>
-                <p className="font-semibold text-gray-800">
-                  Flat ₹100 OFF on your first bus booking
-                </p>
-                <p className="text-sm text-gray-600">
-                  Use code <span className="font-semibold">FIRSTBUS</span>
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => {}}
-              className="text-sm font-semibold text-red-600 hover:underline"
-            >
-              View details
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {recentSearches.length > 0 && (
-        <div className="bg-gray-50 py-6">
-          <div className="max-w-6xl mx-auto px-4">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6">
-              Recently Searched
-            </h2>
-
-            <div className="flex flex-wrap gap-4">
-              {recentSearches.map((s, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => onRecentSearch(s)}
-                  className="border rounded-xl px-4 py-3 text-left hover:shadow-sm transition"
-                >
-                  <p className="font-semibold text-gray-800">
-                    {s.source} → {s.destination}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {new Date(s.date).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "short"
-                    })}
-                  </p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="bg-white py-8 mt-0">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-xl font-semibold text-gray-800 mb-6">
-            Popular Routes
-          </h2>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {POPULAR_ROUTES.map((route, idx) => (
-              <button
-                key={idx}
-                onClick={() =>
-                  selectPopularRoute(route.from, route.to)
-                }
-                className="border rounded-xl px-4 py-3 text-left hover:shadow-sm hover:border-gray-300 transition"
-              >
-                <p className="font-semibold text-gray-800">
-                  {route.from} → {route.to}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  View buses
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <TrustStrip />
+      <OffersBanner />
+      <RecentSearches searches={recentSearches} onSelect={onRecentSearch} />
+      <PopularRoutes onSelect={selectPopularRoute} />
     </>
   );
 }
