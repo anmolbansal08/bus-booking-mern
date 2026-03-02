@@ -79,7 +79,6 @@ if (!booking.ticketNumber) {
 
 await booking.save();
 
-eventBus.emit("booking.confirmed", booking);
 await SeatLock.deleteMany({
   busId: booking.busId,
   travelDate: booking.travelDate,
