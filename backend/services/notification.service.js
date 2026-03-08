@@ -2,6 +2,7 @@ const eventBus = require("../src/utils/eventBus");
 const sendBookingEmail = require("./email.service");
 const NotificationLog = require("../src/models/NotificationLog");
 const Booking=require("../src/models/Booking");
+const sendBookingWhatsApp = require("./whatsapp.service");
 
 eventBus.on("booking.confirmed", async (booking) => {
   console.log("📨 booking.confirmed event received");
@@ -20,6 +21,8 @@ await sendBookingEmail({
   ...populatedBooking.toObject(),
   busName: populatedBooking.busId.name
 });
+
+  await sendBookingWhatsApp(booking);
 
     log.status = "SENT";
     await log.save();
