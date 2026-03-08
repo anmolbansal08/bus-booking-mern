@@ -92,7 +92,7 @@ const html = `
 </body>
 </html>
 `;
-
+console.log("📧 Sending email to:", booking.contact.email);
   await transporter.sendMail({
     from: `"HriKri Bus" <${process.env.EMAIL_USER}>`,
     to: booking.contact.email,
