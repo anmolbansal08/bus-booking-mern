@@ -4,6 +4,7 @@ const NotificationLog = require("../src/models/NotificationLog");
 const Booking=require("../src/models/Booking");
 
 eventBus.on("booking.confirmed", async (booking) => {
+  console.log("📨 booking.confirmed event received");
   const log = await NotificationLog.create({
     bookingId: booking._id,
     type: "EMAIL",
