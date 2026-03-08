@@ -84,8 +84,12 @@ await SeatLock.deleteMany({
   travelDate: booking.travelDate,
   seatNumber: { $in: booking.seats }
 });
+const populatedBooking = await Booking.findById(booking._id)
+  .populate("busId");
+
 console.log("🔥 PAYMENT VERIFIED");
-eventBus.emit("booking.confirmed", booking);
+
+eventBus.emit("booking.confirmed", populatedBooking);
 res.json({
   message: "Payment verified and booking confirmed",
   booking
