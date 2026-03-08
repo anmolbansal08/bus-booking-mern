@@ -93,10 +93,11 @@ const html = `
 </html>
 `;
 console.log("📧 Sending email to:", booking.contact.email);
-  await transporter.sendMail({
+  const info = await transporter.sendMail({
     from: `"HriKri Bus" <${process.env.EMAIL_USER}>`,
     to: booking.contact.email,
     subject: "Booking Confirmed - HriKri Bus",
     html
   });
+  console.log("Email sent:", info.response);
 };
