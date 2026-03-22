@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useRecentSearches from "../features/search/hooks/useRecentSearches";
 import RouteSelector from "../features/search/RouteSelector";
@@ -18,7 +18,7 @@ export default function SearchBar() {
   const [date, setDate] = useState(TODAY);
   const [error, setError] = useState("");
 
-  const { recentSearches, saveRecentSearch } = useRecentSearches();
+  const { recentSearches, saveRecentSearch } = useRecentSearches(); // useRecentSearches custom hook
 
   const search = () => {
     if (!source || !destination) {
