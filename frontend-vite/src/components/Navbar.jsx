@@ -32,7 +32,7 @@ export default function Navbar() {
               to="/my-bookings"
               className="hover:text-red-600 transition"
             >
-              Bookings
+              My Bookings
             </Link>
 
             {user?.role === "ADMIN" && (

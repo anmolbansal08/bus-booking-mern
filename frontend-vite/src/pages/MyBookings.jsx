@@ -5,6 +5,7 @@ import BookingCard from "../components/BookingCard";
 
 export default function MyBookings() {
   const [bookings, setBookings] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -36,15 +37,28 @@ export default function MyBookings() {
     );
   }
 
-  // ✅ Logged in → fetch using user.email
   useEffect(() => {
-    api
-      .get("/bookings/my", {
-        params: { email: user.email }
-      })
-      .then(res => setBookings(res.data))
-      .catch(console.error);
-  }, [user.email]);
+    const fetchBookings = async () => {
+      setIsLoading(true);
+
+      try {
+        const res = await api.get("/bookings/my");
+        setBookings(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBookings();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="text-center mt-20 text-gray-600">Loading bookings...</div>
+    );
+  }
 
   if (!bookings.length) {
     return (
@@ -69,6 +83,7 @@ export default function MyBookings() {
           <BookingCard key={booking._id} booking={booking} />
         ))}
       </div>
+
     </div>
   );
 }
