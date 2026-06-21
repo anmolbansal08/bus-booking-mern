@@ -10,6 +10,8 @@ import BookingSuccess from "./pages/BookingSuccess";
 import PaymentFailed from "./pages/PaymentFailed";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import MyBookings from "./pages/MyBookings";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminHome from "./components/admin/AdminHome";
@@ -41,6 +43,8 @@ export default function App() {
           {/* Auth */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/my-bookings" element={<MyBookings />} />
 <Route path="/manage-ticket" element={<ManageTicket />} />
           {/* Admin (CLEAN) */}

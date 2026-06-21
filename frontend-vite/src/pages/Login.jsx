@@ -43,7 +43,24 @@ export default function Login() {
         className="w-full bg-red-600 text-white py-2 rounded"
       >
         Login
-      </button>    
+      </button>
+
+      <div className="flex items-center justify-between mt-3">
+        <button
+          onClick={() => window.location.assign('/forgot-password')}
+          className="text-sm text-gray-600 underline"
+        >
+          Forgot password?
+        </button>
+
+        <button
+          onClick={() => window.location.assign('/register')}
+          className="text-sm text-gray-600 underline"
+        >
+          Register
+        </button>
+      </div>
+
       </div>
   );
 }
