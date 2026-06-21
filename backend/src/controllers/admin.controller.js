@@ -38,10 +38,27 @@ exports.listRoutes = async (req, res) => {
 
 exports.getAllBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find().sort({ createdAt: -1 });
+    const page = Number(req.query.page) || 1;
+    const limit = 10;
 
-    console.log("Total bookings:", bookings.length);
-    res.json(bookings);
+    const [bookings, totalBookings] = await Promise.all([
+      Booking.find()
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .populate({
+          path: "busId",
+          populate: { path: "routeId" }
+        }),
+      Booking.countDocuments()
+    ]);
+
+    res.json({
+      bookings,
+      page,
+      totalPages: Math.ceil(totalBookings / limit),
+      totalBookings
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
